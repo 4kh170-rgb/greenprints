@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>إعدادات الحساب - لوحة الإدارة</title>
+  
+  <!-- إعدادات PWA وتجربة الجوال -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="لوحة الإدارة">
+  <link rel="apple-touch-icon" href="icon-512.png">
+  <link rel="icon" type="image/png" href="icon-512.png">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { 
+      font-family: 'Cairo', sans-serif; 
+    }
+    .custom-scroll::-webkit-scrollbar { 
+      height: 4px;
+      width: 4px; 
+    }
+    .custom-scroll::-webkit-scrollbar-track { 
+      background: transparent; 
+    }
+    .custom-scroll::-webkit-scrollbar-thumb { 
+      background: rgba(255, 255, 255, 0.2); 
+      border-radius: 4px; 
+    }
+  </style>
+</head>
+<body class="bg-slate-950 min-h-screen flex flex-col text-gray-100 relative selection:bg-amber-500 selection:text-white">
+
+  <!-- إشعار داخلي عائم -->
+  <div id="toast-notification" class="fixed top-6 left-1/2 -translate-x-1/2 z-50 hidden bg-slate-900 border border-slate-700 text-white text-xs font-bold px-6 py-3.5 rounded-2xl shadow-2xl flex items-center space-x-3 space-x-reverse transition-all duration-300">
+    <i id="toast-icon" class="fa-solid fa-circle-check text-emerald-400 text-base"></i>
+    <span id="toast-message">تمت العملية بنجاح</span>
+  </div>
+
+  <!-- الشريط العلوي للإدارة -->
+  <header class="w-full bg-slate-900 border-b border-slate-800 py-4 px-6 sm:px-10 flex flex-col md:flex-row justify-between items-center gap-4 z-40 shrink-0 shadow-lg">
+    <div class="flex items-center space-x-3 space-x-reverse w-full md:w-auto justify-between md:justify-start">
+      <div class="text-white font-black text-sm sm:text-base flex items-center space-x-2 space-x-reverse">
+        <i class="fa-solid fa-shield-halved text-emerald-400 text-lg"></i>
+        <span>إعدادات حساب المدير - منصة البصمات الخضراء</span>
+      </div>
+      <button onclick="adminLogout()" class="md:hidden text-red-400 hover:text-red-300 text-xs font-bold flex items-center space-x-1 space-x-reverse bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-700">
+        <i class="fa-solid fa-right-from-bracket"></i>
+        <span>خروج</span>
+      </button>
+    </div>
+
+    <!-- شريط التنقل العلوي الأفقي الواسع -->
+    <nav class="flex overflow-x-auto space-x-2 space-x-reverse pb-1 custom-scroll font-semibold text-xs whitespace-nowrap w-full md:w-auto max-w-full">
+      <a href="admin-dashboard.html" class="px-3.5 py-2 rounded-xl hover:bg-slate-800 text-slate-300 flex items-center space-x-2 space-x-reverse shrink-0 transition">
+        <i class="fa-solid fa-house text-slate-400"></i>
+        <span>الرئيسية</span>
+      </a>
+      <a href="offices.html" class="px-3.5 py-2 rounded-xl hover:bg-slate-800 text-slate-300 flex items-center space-x-2 space-x-reverse shrink-0 transition">
+        <i class="fa-solid fa-store text-slate-400"></i>
+        <span>المكاتب والتجار</span>
+      </a>
+      <a href="users.html" class="px-3.5 py-2 rounded-xl hover:bg-slate-800 text-slate-300 flex items-center space-x-2 space-x-reverse shrink-0 transition">
+        <i class="fa-solid fa-users text-slate-400"></i>
+        <span>الأفراد</span>
+      </a>
+      <a href="ads.html" class="px-3.5 py-2 rounded-xl hover:bg-slate-800 text-slate-300 flex items-center space-x-2 space-x-reverse shrink-0 transition">
+        <i class="fa-solid fa-rectangle-ad text-slate-400"></i>
+        <span>الإعلانات</span>
+      </a>
+      <a href="reports.html" class="px-3.5 py-2 rounded-xl hover:bg-slate-800 text-slate-300 flex items-center space-x-2 space-x-reverse shrink-0 transition">
+        <i class="fa-solid fa-chart-line text-slate-400"></i>
+        <span>التقارير</span>
+      </a>
+      <a href="messages.html" class="px-3.5 py-2 rounded-xl hover:bg-slate-800 text-slate-300 flex items-center space-x-2 space-x-reverse shrink-0 transition">
+        <i class="fa-solid fa-envelope text-slate-400"></i>
+        <span>الرسائل</span>
+      </a>
+      <a href="settings.html" id="nav-settings" class="px-3.5 py-2 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center space-x-2 space-x-reverse shrink-0">
+        <i class="fa-solid fa-gear"></i>
+        <span>الإعدادات</span>
+      </a>
+    </nav>
+
+    <div class="hidden md:flex items-center">
+      <button onclick="adminLogout()" class="text-red-400 hover:text-red-300 text-xs font-bold flex items-center space-x-1.5 space-x-reverse bg-slate-800 px-4 py-2 rounded-xl border border-slate-700 transition">
+        <i class="fa-solid fa-right-from-bracket"></i>
+        <span>تسجيل الخروج</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- المحتوى الرئيسي للإعدادات بملء الشاشة وبمرونة تامة -->
+  <main class="flex-1 w-full max-w-4xl mx-auto px-4 sm:px-8 py-8 flex flex-col space-y-6">
+
+    <!-- ترويسة القسم -->
+    <div class="bg-slate-900 border border-slate-800 p-6 rounded-3xl shadow-xl flex items-center space-x-4 space-x-reverse">
+      <div class="w-12 h-12 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-2xl flex items-center justify-center text-lg shrink-0">
+        <i class="fa-solid fa-user-shield"></i>
+      </div>
+      <div class="space-y-1">
+        <h1 class="text-lg sm:text-xl font-black text-white">إعدادات حساب المدير العام</h1>
+        <p class="text-xs text-slate-400 font-medium">تحديث بيانات الدخول ومعلومات لوحة التحكم بكل أمان وسلاسة.</p>
+      </div>
+    </div>
+
+    <!-- نموذج تعديل بيانات الأدمن -->
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl shadow-xl p-6 sm:p-8">
+      <form onsubmit="handleSaveAdminSettings(event)" class="space-y-4 text-xs font-semibold">
+        <div class="space-y-1.5">
+          <label class="block text-xs font-bold text-slate-300">اسم المسؤول / النظام</label>
+          <input type="text" id="admin-name" required placeholder="أدخل اسم المشرف..." class="w-full border border-slate-700 p-3.5 rounded-2xl outline-none focus:border-amber-500 bg-slate-950 text-white text-xs transition">
+        </div>
+
+        <div class="space-y-1.5">
+          <label class="block text-xs font-bold text-slate-300">البريد الإلكتروني للإدارة</label>
+          <input type="email" id="admin-email" required placeholder="admin@domain.com" class="w-full border border-slate-700 p-3.5 rounded-2xl outline-none focus:border-amber-500 bg-slate-950 text-white text-xs transition">
+        </div>
+
+        <div class="space-y-1.5">
+          <label class="block text-xs font-bold text-slate-300">كلمة المرور الجديدة</label>
+          <input type="password" id="admin-password" placeholder="اترك الحقل فارغاً لعدم التغيير" class="w-full border border-slate-700 p-3.5 rounded-2xl outline-none focus:border-amber-500 bg-slate-950 text-white text-xs transition">
+        </div>
+
+        <div class="pt-4 flex flex-col sm:flex-row gap-3">
+          <button type="submit" class="flex-1 bg-amber-500 hover:bg-amber-600 text-slate-950 font-black py-3.5 rounded-2xl shadow-lg transition text-xs text-center">
+            حفظ التغييرات
+          </button>
+          <button type="button" onclick="window.location.href='admin-dashboard.html'" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3.5 rounded-2xl border border-slate-700 transition text-xs text-center">
+            إلغاء والعودة للرئيسية
+          </button>
+        </div>
+      </form>
+    </div>
+
+  </main>
+
+  <!-- تذييل الصفحة -->
+  <footer class="w-full py-4 text-center text-slate-500 text-xs border-t border-slate-900 bg-slate-950 shrink-0">
+    منصة البصمات الخضراء &copy; 2026 - جميع الحقوق محفوظة
+  </footer>
+
+  <!-- سكربت التحكم والربط مع فايربيس -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, doc, getDoc, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBE-mGCcnUCgscoECF-4ncW0ZuB57Uo6CM",
+      authDomain: "green-prints-c6f65.firebaseapp.com",
+      projectId: "green-prints-c6f65",
+      storageBucket: "green-prints-c6f65.firebasestorage.app",
+      messagingSenderId: "726286369175",
+      appId: "1:726286369175:web:3137f5597c177aeb8c84d2",
+      measurementId: "G-7XLHB3RSZR"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    window.showToast = function(msg, type = 'success') {
+      const toast = document.getElementById('toast-notification');
+      const icon = document.getElementById('toast-icon');
+      const text = document.getElementById('toast-message');
+
+      text.innerText = msg;
+      if (type === 'error') {
+        icon.className = "fa-solid fa-circle-exclamation text-rose-400 text-base";
+      } else if (type === 'info') {
+        icon.className = "fa-solid fa-circle-info text-sky-400 text-base";
+      } else {
+        icon.className = "fa-solid fa-circle-check text-emerald-400 text-base";
+      }
+
+      toast.classList.remove('hidden');
+      setTimeout(() => { toast.classList.add('hidden'); }, 3500);
+    };
+
+    window.adminLogout = function() {
+      localStorage.removeItem("isAdminLoggedIn");
+      showToast("تم تسجيل الخروج بنجاح", "info");
+      setTimeout(() => {
+        window.location.href = "admin-login.html";
+      }, 1000);
+    };
+
+    // تحميل بيانات الأدمن الحالية من قاعدة البيانات
+    async function loadAdminData() {
+      try {
+        const docRef = doc(db, "settings", "admin_config");
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          document.getElementById('admin-name').value = data.name || "المدير العام";
+          document.getElementById('admin-email').value = data.email || "admin@greenprints.com";
+        } else {
+          await setDoc(docRef, {
+            name: "المدير العام",
+            email: "admin@greenprints.com",
+            password: "admin12345"
+          });
+          document.getElementById('admin-name').value = "المدير العام";
+          document.getElementById('admin-email').value = "admin@greenprints.com";
+        }
+      } catch (err) {
+        console.error("Error loading admin settings:", err);
+      }
+    }
+
+    // حفظ وتحديث بيانات الأدمن
+    window.handleSaveAdminSettings = async function(e) {
+      e.preventDefault();
+      const name = document.getElementById('admin-name').value.trim();
+      const email = document.getElementById('admin-email').value.trim();
+      const password = document.getElementById('admin-password').value.trim();
+
+      try {
+        const docRef = doc(db, "settings", "admin_config");
+        let updateData = { name, email };
+        
+        if (password.length > 0) {
+          updateData.password = password;
+        }
+
+        await updateDoc(docRef, updateData);
+        showToast("تم تحديث بيانات الحساب بنجاح", "success");
+        document.getElementById('admin-password').value = '';
+      } catch (err) {
+        showToast("حدث خطأ أثناء حفظ التغييرات", "error");
+      }
+    };
+
+    loadAdminData();
+  </script>
+</body>
+</html>

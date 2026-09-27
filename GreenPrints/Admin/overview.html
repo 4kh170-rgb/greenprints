@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>إدارة المكاتب والتجار - لوحة الإدارة</title>
+  
+  <!-- إعدادات PWA وتجربة الجوال -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="لوحة الإدارة">
+  <link rel="apple-touch-icon" href="icon-512.png">
+  <link rel="icon" type="image/png" href="icon-512.png">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { 
+      font-family: 'Cairo', sans-serif; 
+    }
+    .scrollbar-none::-webkit-scrollbar {
+      display: none;
+    }
+    .scrollbar-none {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 min-h-screen flex flex-col text-gray-100 relative selection:bg-amber-500 selection:text-white">
+
+  <!-- الشريط العلوي للإدارة -->
+  <header class="w-full bg-slate-900 border-b border-slate-800 py-4 px-6 sm:px-10 flex flex-col md:flex-row justify-between items-center gap-4 z-40 shrink-0 shadow-lg">
+    <div class="flex items-center space-x-3 space-x-reverse w-full md:w-auto justify-between md:justify-start">
+      <div class="text-white font-black text-sm sm:text-base flex items-center space-x-2 space-x-reverse">
+        <i class="fa-solid fa-shield-halved text-amber-400 text-lg"></i>
+        <span>لوحة الإدارة الرئيسية - منصة البصمات الخضراء</span>
+      </div>
+      <button onclick="adminLogout()" class="md:hidden text-red-400 hover:text-red-300 text-xs font-bold flex items-center space-x-1 space-x-reverse bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-700">
+        <i class="fa-solid fa-right-from-bracket"></i>
+        <span>خروج</span>
+      </button>
+    </div>
+
+    <!-- شريط التنقل العلوي الأفقي الواسع -->
+    <nav class="flex overflow-x-auto space-x-2 space-x-reverse pb-1 scrollbar-none font-semibold text-xs whitespace-nowrap w-full md:w-auto max-w-full">
+      <a href="overview.html" class="px-3.5 py-2 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center space-x-2 space-x-reverse shrink-0">
+        <i class="fa-solid fa-house"></i>
+        <span>الرئيسية</span>
+      </a>
+      <a href="offices.html" class="px-3.5 py-2 rounded-xl hover:bg-slate-800 text-slate-300 flex items-center space-x-2 space-x-reverse shrink-0 transition">
+        <i class="fa-solid fa-store text-slate-400"></i>
+        <span>المكاتب والتجار</span>
+      </a>
+      <a href="users.html" class="px-3.5 py-2 rounded-xl hover:bg-slate-800 text-slate-300 flex items-center space-x-2 space-x-reverse shrink-0 transition">
+        <i class="fa-solid fa-users text-slate-400"></i>
+        <span>الأفراد</span>
+      </a>
+      <a href="ads.html" class="px-3.5 py-2 rounded-xl hover:bg-slate-800 text-slate-300 flex items-center space-x-2 space-x-reverse shrink-0 transition">
+        <i class="fa-solid fa-rectangle-ad text-slate-400"></i>
+        <span>الإعلانات</span>
+      </a>
+      <a href="reports.html" class="px-3.5 py-2 rounded-xl hover:bg-slate-800 text-slate-300 flex items-center space-x-2 space-x-reverse shrink-0 transition">
+        <i class="fa-solid fa-chart-line text-slate-400"></i>
+        <span>التقارير</span>
+      </a>
+      <a href="messages.html" class="px-3.5 py-2 rounded-xl hover:bg-slate-800 text-slate-300 flex items-center space-x-2 space-x-reverse shrink-0 transition">
+        <i class="fa-solid fa-envelope text-slate-400"></i>
+        <span>الرسائل</span>
+      </a>
+      <a href="settings.html" class="px-3.5 py-2 rounded-xl hover:bg-slate-800 text-slate-300 flex items-center space-x-2 space-x-reverse shrink-0 transition">
+        <i class="fa-solid fa-gear text-slate-400"></i>
+        <span>الإعدادات</span>
+      </a>
+    </nav>
+
+    <div class="hidden md:flex items-center">
+      <button onclick="adminLogout()" class="text-red-400 hover:text-red-300 text-xs font-bold flex items-center space-x-1.5 space-x-reverse bg-slate-800 px-4 py-2 rounded-xl border border-slate-700 transition">
+        <i class="fa-solid fa-right-from-bracket"></i>
+        <span>تسجيل الخروج</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- المحتوى الرئيسي بملء الشاشة وبمرونة تامة -->
+  <main class="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-8 py-8 flex flex-col space-y-6">
+
+    <!-- ترويسة وعنوان الصفحة -->
+    <div class="bg-slate-900 border border-slate-800 p-6 rounded-3xl shadow-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div class="space-y-1">
+        <h1 class="text-lg sm:text-xl font-black text-white">إدارة المكاتب والتجار</h1>
+        <p class="text-xs text-slate-400 font-medium">متابعة الحسابات وعملائهم بكل احترافية عبر منصة الإدارة.</p>
+      </div>
+      <div class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-bold px-3.5 py-1.5 rounded-xl flex items-center space-x-2 space-x-reverse">
+        <i class="fa-solid fa-circle-check"></i>
+        <span>متصل بـ Firebase</span>
+      </div>
+    </div>
+
+    <!-- الإحصائيات الواسعة -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div class="bg-slate-900 border border-slate-800 p-5 rounded-3xl shadow-xl flex items-center justify-between">
+        <div class="space-y-1">
+          <div class="text-xs text-slate-400 font-bold">المكاتب والتجار</div>
+          <div id="totalOfficesCount" class="text-xl sm:text-2xl font-black text-emerald-400">0</div>
+        </div>
+        <div class="w-12 h-12 bg-emerald-500/10 text-emerald-400 rounded-2xl flex items-center justify-center text-lg border border-emerald-500/20">
+          <i class="fa-solid fa-store"></i>
+        </div>
+      </div>
+      <div class="bg-slate-900 border border-slate-800 p-5 rounded-3xl shadow-xl flex items-center justify-between">
+        <div class="space-y-1">
+          <div class="text-xs text-slate-400 font-bold">إجمالي العملاء</div>
+          <div id="totalClientsCount" class="text-xl sm:text-2xl font-black text-indigo-400">0</div>
+        </div>
+        <div class="w-12 h-12 bg-indigo-500/10 text-indigo-400 rounded-2xl flex items-center justify-center text-lg border border-indigo-500/20">
+          <i class="fa-solid fa-users"></i>
+        </div>
+      </div>
+      <div class="bg-slate-900 border border-slate-800 p-5 rounded-3xl shadow-xl flex items-center justify-between">
+        <div class="space-y-1">
+          <div class="text-xs text-slate-400 font-bold">حالة النظام</div>
+          <div class="text-xl sm:text-2xl font-black text-amber-400">نشط</div>
+        </div>
+        <div class="w-12 h-12 bg-amber-500/10 text-amber-400 rounded-2xl flex items-center justify-center text-lg border border-amber-500/20">
+          <i class="fa-solid fa-database"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- جدول المكاتب والتجار الواسع -->
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl shadow-xl overflow-hidden flex flex-col">
+      <div class="p-5 border-b border-slate-800 flex justify-between items-center bg-slate-900/50">
+        <h3 class="font-black text-white text-sm">حسابات المكاتب والتجار</h3>
+        <span class="text-xs bg-slate-800 text-slate-300 font-bold px-3 py-1 rounded-xl border border-slate-700">جلب فوري</span>
+      </div>
+      <div class="overflow-x-auto custom-scroll">
+        <table class="w-full text-right text-xs whitespace-nowrap">
+          <thead class="bg-slate-950 text-slate-400 font-bold border-b border-slate-800">
+            <tr>
+              <th class="p-4">المكتب</th>
+              <th class="p-4">الجوال</th>
+              <th class="p-4">السجل التجاري</th>
+              <th class="p-4">المدينة</th>
+              <th class="p-4">العملاء</th>
+              <th class="p-4">الاشتراك</th>
+              <th class="p-4 text-center">إجراءات</th>
+            </tr>
+          </thead>
+          <tbody id="merchantsTableBody" class="divide-y divide-slate-800 font-semibold text-slate-200">
+            <tr>
+              <td colspan="7" class="p-10 text-center text-slate-400 text-xs">جاري تحميل بيانات المكاتب...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- تذييل الصفحة -->
+  <footer class="w-full py-4 text-center text-slate-500 text-xs border-t border-slate-900 bg-slate-950 shrink-0">
+    منصة البصمات الخضراء &copy; 2026 - جميع الحقوق محفوظة
+  </footer>
+
+  <!-- نافذة عملاء المكتب -->
+  <div id="clientsModal" class="fixed inset-0 bg-slate-950/80 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[85vh]">
+      <div class="p-5 border-b border-slate-800 flex justify-between items-center bg-slate-900/50">
+        <h3 id="modalTitle" class="font-black text-white text-sm truncate">قائمة العملاء</h3>
+        <button onclick="closeModal('clientsModal')" class="w-8 h-8 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-full flex items-center justify-center transition border border-slate-700 shrink-0">
+          <i class="fa-solid fa-xmark text-xs"></i>
+        </button>
+      </div>
+      <div class="overflow-x-auto flex-1 p-4 custom-scroll">
+        <table class="w-full text-right text-xs">
+          <thead class="bg-slate-950 text-slate-400 font-bold border-b border-slate-800 sticky top-0">
+            <tr>
+              <th class="p-3">الاسم</th>
+              <th class="p-3">الهوية</th>
+              <th class="p-3">المديونية</th>
+              <th class="p-3">المسدد</th>
+            </tr>
+          </thead>
+          <tbody id="modalClientsTableBody" class="divide-y divide-slate-800 font-semibold text-slate-200"></tbody>
+        </table>
+      </div>
+      <div class="p-4 border-t border-slate-800 bg-slate-900/50 flex justify-end">
+        <button onclick="closeModal('clientsModal')" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold rounded-2xl shadow-sm transition border border-slate-700">إغلاق</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- نافذة إرسال بريد للمكتب -->
+  <div id="sendMailModal" class="fixed inset-0 bg-slate-950/80 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl w-full max-w-md overflow-hidden p-6 space-y-4 text-xs">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-4">
+        <h3 class="font-black text-white text-sm truncate" id="sendMailTitle">إرسال رسالة للمكتب</h3>
+        <button onclick="closeModal('sendMailModal')" class="w-8 h-8 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-full flex items-center justify-center border border-slate-700"><i class="fa-solid fa-xmark text-xs"></i></button>
+      </div>
+      <div class="space-y-3">
+        <input type="hidden" id="targetOfficeId">
+        <div class="space-y-1">
+          <label class="block text-[11px] font-bold text-slate-300">عنوان الرسالة</label>
+          <input type="text" id="mailSubject" class="w-full p-3 bg-slate-950 border border-slate-800 rounded-2xl text-xs text-white focus:outline-none focus:border-indigo-500" placeholder="عنوان التنبيه...">
+        </div>
+        <div class="space-y-1">
+          <label class="block text-[11px] font-bold text-slate-300">الملاحظات أو محتوى الرسالة</label>
+          <textarea id="mailMessage" rows="4" class="w-full p-3 bg-slate-950 border border-slate-800 rounded-2xl text-xs text-white focus:outline-none focus:border-indigo-500" placeholder="اكتب تفاصيل الملاحظات..."></textarea>
+        </div>
+        <button onclick="submitSendMail()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-2xl shadow-md transition">إرسال الآن</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- نافذة البريد الوارد -->
+  <div id="inboxModal" class="fixed inset-0 bg-slate-950/80 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col max-h-[85vh]">
+      <div class="p-5 border-b border-slate-800 flex justify-between items-center bg-slate-900/50">
+        <h3 class="font-black text-white text-sm truncate" id="inboxTitle">البريد الوارد</h3>
+        <button onclick="closeModal('inboxModal')" class="w-8 h-8 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-full flex items-center justify-center border border-slate-700"><i class="fa-solid fa-xmark text-xs"></i></button>
+      </div>
+      <div class="p-5 max-h-72 overflow-y-auto space-y-3 flex-1 text-xs custom-scroll" id="inboxMessagesContainer"></div>
+      <div class="p-4 border-t border-slate-800 bg-slate-900/50 flex justify-end">
+        <button onclick="closeModal('inboxModal')" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold rounded-2xl border border-slate-700">إغلاق</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- فايربيس -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      projectId: "green-prints-c6f65"
+    };
+
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+    const db = firebase.firestore();
+
+    let merchantsGlobalData = {};
+
+    async function fetchMerchants() {
+      try {
+        const clientsSnapshot = await db.collection("merchant_clients").get();
+        let allClients = [];
+        clientsSnapshot.forEach(doc => {
+          allClients.push({ id: doc.id, ...doc.data() });
+        });
+
+        const snapshot = await db.collection("merchants").get();
+        const tbody = document.getElementById("merchantsTableBody");
+        const totalOfficesEl = document.getElementById("totalOfficesCount");
+        const totalClientsEl = document.getElementById("totalClientsCount");
+
+        tbody.innerHTML = "";
+        let totalOffices = 0;
+        let totalClientsCount = 0;
+
+        if (snapshot.empty) {
+          tbody.innerHTML = '<tr><td colspan="7" class="p-10 text-center text-slate-400 text-xs">لا توجد مكاتب مسجلة حالياً</td></tr>';
+          totalOfficesEl.innerText = "0";
+          totalClientsEl.innerText = "0";
+          return;
+        }
+
+        let merchantsList = [];
+        snapshot.forEach(doc => {
+          merchantsList.push({ id: doc.id, ...doc.data() });
+        });
+
+        merchantsList.sort((a, b) => (b.isPinned === true) - (a.isPinned === true));
+
+        merchantsList.forEach(data => {
+          totalOffices++;
+          const officeId = data.id;
+          const officeName = data.officeName || data.name || "مكتب بدون اسم";
+          const phone = data.phone || "غير محدد";
+          const commercialRecord = data.commercialRecord || data.commercial_record || "";
+          const city = data.city || "غير محدد";
+          const isLocked = data.isLocked === true;
+          const isPinned = data.isPinned === true;
+
+          let remainingDays = 365;
+          if (data.createdAt) {
+            let createdDate = data.createdAt.toDate ? data.createdAt.toDate() : new Date(data.createdAt);
+            let diffDays = Math.floor((new Date() - createdDate) / (1000 * 60 * 60 * 24));
+            remainingDays = Math.max(0, 365 - diffDays);
+          }
+
+          let matchedClients = allClients.filter(client => 
+            String(client.commercialRecord) === String(commercialRecord) || 
+            String(client.commercial_record) === String(commercialRecord)
+          );
+
+          totalClientsCount += matchedClients.length;
+          merchantsGlobalData[officeName] = matchedClients;
+
+          tbody.innerHTML += `
+            <tr class="hover:bg-slate-800/50 transition ${isPinned ? 'bg-amber-500/5' : ''}">
+              <td class="p-4 text-indigo-400 font-extrabold flex items-center gap-1.5">
+                ${isPinned ? '<i class="fa-solid fa-thumbtack text-amber-400 text-xs" title="مثبت"></i>' : ''}
+                <span class="truncate max-w-[150px]">${officeName}</span>
+              </td>
+              <td class="p-4 text-slate-300">${phone}</td>
+              <td class="p-4 text-purple-400 font-mono">${commercialRecord || '-'}</td>
+              <td class="p-4 text-slate-300">${city}</td>
+              <td class="p-4">
+                <button onclick="openOfficeClientsModal('${officeName}')" class="inline-flex items-center gap-1.5 bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 px-3 py-1 rounded-xl font-bold border border-sky-500/20 transition shadow-sm">
+                  <i class="fa-solid fa-users text-xs"></i> ${matchedClients.length}
+                </button>
+              </td>
+              <td class="p-4">
+                <span class="inline-flex items-center gap-1 bg-amber-500/10 text-amber-400 px-3 py-1 rounded-xl text-xs font-bold border border-amber-500/20">
+                  ${remainingDays} يوم
+                </span>
+              </td>
+              <td class="p-4 text-center">
+                <div class="flex items-center justify-center space-x-1.5 space-x-reverse">
+                  <button onclick="openInbox('${officeId}', '${officeName}')" title="البريد الوارد" class="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20 flex items-center justify-center shadow-sm transition">
+                    <i class="fa-solid fa-inbox text-xs"></i>
+                  </button>
+                  <button onclick="openSendMailModal('${officeId}', '${officeName}')" title="إرسال رسالة" class="w-8 h-8 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 hover:bg-indigo-500/20 flex items-center justify-center shadow-sm transition">
+                    <i class="fa-solid fa-paper-plane text-xs"></i>
+                  </button>
+                  <button onclick="toggleLockOffice('${officeId}', ${isLocked})" title="تغيير حالة القفل" class="w-8 h-8 rounded-xl text-white flex items-center justify-center shadow-sm transition text-xs" style="background-color: ${isLocked ? '#f43f5e' : '#10b981'};">
+                    <i class="fa-solid ${isLocked ? 'fa-lock' : 'fa-lock-open'}"></i>
+                  </button>
+                  <button onclick="togglePinOffice('${officeId}', ${isPinned})" title="تثبيت" class="w-8 h-8 rounded-xl bg-slate-800 border border-slate-700 ${isPinned ? 'text-amber-400 border-amber-500/40 bg-amber-500/10' : 'text-slate-400'} hover:bg-slate-700 flex items-center justify-center shadow-sm transition">
+                    <i class="fa-solid fa-thumbtack text-xs"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          `;
+        });
+
+        totalOfficesEl.innerText = totalOffices;
+        totalClientsEl.innerText = totalClientsCount;
+
+      } catch (error) {
+        console.error("خطأ في جلب بيانات المكاتب: ", error);
+      }
+    }
+
+    function openSendMailModal(officeId, officeName) {
+      document.getElementById('targetOfficeId').value = officeId;
+      document.getElementById('sendMailTitle').innerText = `إرسال رسالة: ${officeName}`;
+      document.getElementById('mailSubject').value = '';
+      document.getElementById('mailMessage').value = '';
+      const modal = document.getElementById('sendMailModal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    async function submitSendMail() {
+      const officeId = document.getElementById('targetOfficeId').value;
+      const subject = document.getElementById('mailSubject').value;
+      const message = document.getElementById('mailMessage').value;
+
+      if (!subject || !message) {
+        alert('الرجاء إدخال العنوان والملاحظات');
+        return;
+      }
+
+      try {
+        await db.collection("merchant_messages").add({
+          officeId: officeId,
+          sender: "admin",
+          subject: subject,
+          message: message,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        
+        closeModal('sendMailModal');
+      } catch (error) {
+        console.error("خطأ في الإرسال:", error);
+        alert('حدث خطأ أثناء الإرسال');
+      }
+    }
+
+    async function openInbox(officeId, officeName) {
+      document.getElementById('inboxTitle').innerText = `البريد الوارد: ${officeName}`;
+      const container = document.getElementById('inboxMessagesContainer');
+      container.innerHTML = '<div class="text-center text-slate-500 py-4 text-xs">جاري تحميل الرسائل...</div>';
+      const modal = document.getElementById('inboxModal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+
+      try {
+        const snapshot = await db.collection("office_inbox")
+          .where("officeId", "==", officeId)
+          .get();
+
+        if (snapshot.empty) {
+          container.innerHTML = '<div class="text-center text-slate-500 py-6 text-xs">لا توجد رسائل واردة حالياً</div>';
+          return;
+        }
+
+        container.innerHTML = "";
+        snapshot.forEach(doc => {
+          const msg = doc.data();
+          container.innerHTML += `
+            <div class="p-3.5 bg-slate-950/60 border border-slate-800 rounded-2xl space-y-1.5 shadow-sm">
+              <div class="flex justify-between items-center">
+                <span class="font-extrabold text-white text-xs">${msg.subject || 'بدون عنوان'}</span>
+                <span class="text-[10px] text-slate-400 bg-slate-800 px-2 py-0.5 rounded-lg border border-slate-700">مكتب</span>
+              </div>
+              <p class="text-xs text-slate-300 leading-relaxed">${msg.message || msg.content || ''}</p>
+            </div>
+          `;
+        });
+      } catch (error) {
+        console.error("خطأ في جلب البريد الوارد:", error);
+        container.innerHTML = '<div class="text-center text-rose-400 py-4 text-xs">حدث خطأ أثناء جلب الرسائل</div>';
+      }
+    }
+
+    async function toggleLockOffice(officeId, currentStatus) {
+      try {
+        await db.collection("merchants").doc(officeId).update({
+          isLocked: !currentStatus
+        });
+        fetchMerchants();
+      } catch (error) {
+        console.error("خطأ في تغيير حالة القفل:", error);
+      }
+    }
+
+    async function togglePinOffice(officeId, currentPinStatus) {
+      try {
+        await db.collection("merchants").doc(officeId).update({
+          isPinned: !currentPinStatus
+        });
+        fetchMerchants();
+      } catch (error) {
+        console.error("خطأ في تغيير حالة التثبيت:", error);
+      }
+    }
+
+    function openOfficeClientsModal(officeName) {
+      const modal = document.getElementById('clientsModal');
+      const tbody = document.getElementById('modalClientsTableBody');
+      document.getElementById('modalTitle').innerText = `عملاء: ${officeName}`;
+      
+      const clients = merchantsGlobalData[officeName] || [];
+      tbody.innerHTML = clients.length === 0 ? 
+        '<tr><td colspan="4" class="p-6 text-center text-slate-500 text-xs">لا توجد بيانات لعملاء هذا المكتب</td></tr>' :
+        clients.map(client => `
+          <tr class="hover:bg-slate-800/50 transition">
+            <td class="p-3 text-white font-extrabold truncate max-w-[120px]">${client.name || '-'}</td>
+            <td class="p-3 text-purple-400 font-mono">${client.id_number || client.nationalId || '-'}</td>
+            <td class="p-3 text-rose-400 font-bold">${client.currentBalance !== undefined ? client.currentBalance + ' ر.س' : '0'}</td>
+            <td class="p-3 text-emerald-400 font-bold">${client.lastPaidAmount !== undefined ? client.lastPaidAmount + ' ر.س' : '0'}</td>
+          </tr>
+        `).join('');
+
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeModal(modalId) {
+      const modal = document.getElementById(modalId);
+      if(modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
+
+    function adminLogout() {
+      localStorage.removeItem("isAdminLoggedIn");
+      window.location.href = "admin-login.html";
+    }
+
+    window.onload = function() {
+      fetchMerchants();
+    };
+  </script>
+</body>
+</html>

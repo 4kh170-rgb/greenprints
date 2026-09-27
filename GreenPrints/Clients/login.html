@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  
+  <!-- إعدادات الـ PWA -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#030712">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="البصمات الخضراء">
+  <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+
+  <title>تسجيل دخول الأفراد - منصة البصمات الخضراء</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Cairo', sans-serif; }
+    .custom-scroll::-webkit-scrollbar { width: 4px; }
+    .custom-scroll::-webkit-scrollbar-track { background: transparent; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.15); border-radius: 4px; }
+  </style>
+</head>
+<body class="bg-slate-950 min-h-screen flex flex-col text-gray-800 relative selection:bg-indigo-500 selection:text-white">
+
+  <!-- إشعار عائم -->
+  <div id="toast-notification" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 hidden bg-gray-900 text-white text-xs font-bold px-4 py-2 rounded-xl shadow-2xl flex items-center space-x-2 space-x-reverse transition-all duration-300">
+    <i id="toast-icon" class="fa-solid fa-circle-check text-emerald-400 text-sm"></i>
+    <span id="toast-message">تمت العملية بنجاح</span>
+  </div>
+
+  <!-- الشريط العلوي للمنصة -->
+  <header class="w-full bg-slate-900 border-b border-slate-800 py-4 px-6 sm:px-10 flex justify-between items-center z-40 shrink-0">
+    <div class="flex items-center space-x-3 space-x-reverse">
+      <button onclick="goBack()" class="w-9 h-9 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl border border-slate-700 flex items-center justify-center transition shadow-sm" title="العودة للرئيسية">
+        <i class="fa-solid fa-arrow-right text-xs"></i>
+      </button>
+      <span class="text-xs sm:text-sm font-bold text-white tracking-wide">منصة البصمات الخضراء</span>
+    </div>
+    <div class="text-xs text-slate-400 font-medium hidden sm:block">بوابة الأفراد</div>
+  </header>
+
+  <!-- المحتوى الأساسي بملء الشاشة وبمرونة تامة -->
+  <main class="flex-1 w-full max-w-md mx-auto px-4 sm:px-6 py-10 flex flex-col justify-center items-center">
+    
+    <div class="bg-white w-full shadow-2xl rounded-3xl p-6 sm:p-8 border border-gray-100 flex flex-col justify-between space-y-6">
+      
+      <div class="space-y-6">
+        <div class="text-center space-y-2">
+          <div class="w-14 h-14 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto text-xl shadow-sm">
+            <i class="fa-solid fa-user"></i>
+          </div>
+          <h1 class="text-lg sm:text-xl font-black text-indigo-900">بوابة الأفراد</h1>
+          <p class="text-xs text-gray-400 font-semibold">تسجيل الدخول للنظام</p>
+        </div>
+
+        <form onsubmit="handleLogin(event)" class="space-y-4 text-xs font-semibold">
+          <!-- حقل رقم الهوية للأفراد -->
+          <div>
+            <label class="block text-xs font-bold text-gray-600 mb-1.5">رقم الهوية الوطنية</label>
+            <div class="relative">
+              <span class="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-gray-400">
+                <i class="fa-solid fa-id-card text-xs"></i>
+              </span>
+              <input type="text" id="login-identifier" required placeholder="أدخل رقم الهوية (10 أرقام)" maxlength="10" class="w-full border border-gray-200 pr-9 pl-3 py-3 rounded-xl outline-none focus:border-indigo-500 text-gray-800 text-xs shadow-sm">
+            </div>
+          </div>
+
+          <!-- كلمة المرور مع زر العين -->
+          <div>
+            <label class="block text-xs font-bold text-gray-600 mb-1.5">كلمة المرور</label>
+            <div class="relative">
+              <input type="password" id="login-password" required placeholder="••••••••" class="w-full border border-gray-200 pr-3 pl-10 py-3 rounded-xl outline-none focus:border-indigo-500 text-gray-800 text-xs shadow-sm">
+              <button type="button" onclick="togglePassword()" class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400 hover:text-indigo-600 focus:outline-none">
+                <i id="eye-icon" class="fa-solid fa-eye text-xs"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between text-xs pt-1">
+            <a href="forgot-password.html" class="text-indigo-600 font-bold hover:underline">نسيت كلمة المرور؟</a>
+            <a href="register.html" class="text-gray-500 font-bold hover:text-indigo-600">ليس لديك حساب؟ <span class="text-indigo-600">سجل الآن</span></a>
+          </div>
+
+          <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl shadow-lg shadow-indigo-600/20 transition flex items-center justify-center space-x-2 space-x-reverse mt-2 text-xs">
+            <span>تسجيل الدخول</span>
+            <i class="fa-solid fa-arrow-right-to-bracket text-xs"></i>
+          </button>
+        </form>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- تذييل الصفحة -->
+  <footer class="w-full py-4 text-center text-slate-500 text-xs border-t border-slate-900 bg-slate-950 shrink-0">
+    منصة البصمات الخضراء &copy; 2026 - جميع الحقوق محفوظة
+  </footer>
+
+  <!-- JavaScript -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBE-mGCcnUCgscoECF-4ncW0ZuB57Uo6CM",
+      authDomain: "green-prints-c6f65.firebaseapp.com",
+      projectId: "green-prints-c6f65",
+      storageBucket: "green-prints-c6f65.firebasestorage.app",
+      messagingSenderId: "726286369175",
+      appId: "1:726286369175:web:3137f5597c177aeb8c84d2",
+      measurementId: "G-7XLHB3RSZR"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    window.goBack = function() {
+      window.location.href = "../index.html";
+    };
+
+    window.showToast = function(msg, type = 'success') {
+      const toast = document.getElementById('toast-notification');
+      const icon = document.getElementById('toast-icon');
+      const text = document.getElementById('toast-message');
+
+      text.innerText = msg;
+      if (type === 'error') {
+        icon.className = "fa-solid fa-circle-exclamation text-rose-400 text-sm";
+      } else {
+        icon.className = "fa-solid fa-circle-check text-emerald-400 text-sm";
+      }
+
+      toast.classList.remove('hidden');
+      setTimeout(() => { toast.classList.add('hidden'); }, 3500);
+    };
+
+    window.togglePassword = function() {
+      const passwordInput = document.getElementById('login-password');
+      const eyeIcon = document.getElementById('eye-icon');
+      if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        eyeIcon.className = "fa-solid fa-eye-slash text-xs";
+      } else {
+        passwordInput.type = 'password';
+        eyeIcon.className = "fa-solid fa-eye text-xs";
+      }
+    };
+
+    window.handleLogin = async function(e) {
+      e.preventDefault();
+      const identifier = document.getElementById('login-identifier').value.trim();
+
+      if (identifier.length !== 10) {
+        showToast("يجب أن يتكون رقم الهوية من 10 خانات بالضبط", "error");
+        return;
+      }
+
+      try {
+        localStorage.clear();
+
+        let collectionName = "clients";
+        let queryField = "nationalId";
+        let redirectPage = "dashboard_1_1.html";
+
+        let q = query(collection(db, collectionName), where(queryField, "==", identifier));
+        let querySnapshot = await getDocs(q);
+
+        if (querySnapshot.empty && !isNaN(identifier)) {
+          q = query(collection(db, collectionName), where(queryField, "==", Number(identifier)));
+          querySnapshot = await getDocs(q);
+        }
+
+        if (querySnapshot.empty) {
+          showToast("رقم الهوية غير مسجل في بوابة الأفراد", "error");
+          return;
+        }
+
+        let userName = "المستفيد";
+        let isBlocked = false;
+        
+        querySnapshot.forEach((doc) => {
+          const data = doc.data();
+          userName = data.name || "المستفيد";
+          isBlocked = data.isBlocked === true;
+        });
+
+        if (isBlocked) {
+          showToast("عذراً، هذا الحساب موقوف من قبل الإدارة", "error");
+          return;
+        }
+        
+        localStorage.setItem("currentClientNationalId", identifier);
+        localStorage.setItem("currentClientName", userName);
+
+        showToast(`مرحباً بك ${userName}`, "success");
+        
+        setTimeout(() => {
+          window.location.href = redirectPage;
+        }, 1200);
+
+      } catch (error) {
+        console.error("Login Error:", error);
+        showToast("حدث خطأ أثناء الاتصال بقاعدة البيانات", "error");
+      }
+    };
+  </script>
+</body>
+</html>

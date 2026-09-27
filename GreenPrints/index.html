@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>منصة البصمات الخضراء - التصميم السيبراني المستقبلي</title>
+  
+  <!-- إعدادات PWA والأيقونات -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#030712">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="البصمات الخضراء">
+  <link rel="apple-touch-icon" href="icon-512.png">
+  <link rel="icon" type="image/png" href="icon-512.png">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(reg => console.log('Service Worker registered!'))
+          .catch(err => console.log('Service Worker failed:', err));
+      });
+    }
+  </script>
+
+  <style>
+    body { font-family: 'Cairo', sans-serif; }
+    .neon-border {
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    .neon-border-indigo {
+      box-shadow: 0 0 20px rgba(99, 102, 241, 0.15);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+    }
+    .custom-scroll::-webkit-scrollbar { width: 4px; }
+    .custom-scroll::-webkit-scrollbar-track { background: transparent; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: rgba(16, 185, 129, 0.3); border-radius: 4px; }
+
+    /* تخصيص إطار الجوال للشاشات الكبيرة */
+    @media (min-width: 768px) {
+      body {
+        background-color: #0b0f19 !important;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        margin: 0;
+      }
+      .mobile-frame {
+        width: 100%;
+        max-width: 412px;
+        height: 870px;
+        max-height: 92vh;
+        background: #000000;
+        border: 12px solid #1f2937;
+        border-radius: 45px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 40px rgba(16, 185, 129, 0.15);
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+      }
+    }
+  </style>
+</head>
+<body class="bg-black min-h-screen text-gray-100 flex flex-col justify-between relative selection:bg-emerald-500 selection:text-black overflow-x-hidden">
+
+  <!-- لف المحتوى داخل الإطار الخاص بالجوال -->
+  <div class="mobile-frame w-full min-h-screen flex flex-col justify-between">
+
+    <!-- خلفيات نيونية متدرجة ديناميكية -->
+    <div class="absolute top-0 right-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-[120px] pointer-events-none"></div>
+    <div class="absolute bottom-0 left-1/4 w-96 h-96 bg-indigo-500/10 rounded-full blur-[120px] pointer-events-none"></div>
+
+    <!-- إشعار عائم سيبراني -->
+    <div id="toast-notification" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 hidden bg-emerald-950 border border-emerald-500 text-emerald-300 text-xs font-bold px-5 py-2.5 rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.4)] flex items-center space-x-2 space-x-reverse transition-all duration-300">
+      <i class="fa-solid fa-terminal text-emerald-400"></i>
+      <span id="toast-message">هذا القسم قيد التجهيز</span>
+    </div>
+
+    <!-- الشريط العلوي الاحترافي السيبراني -->
+    <header class="w-full px-6 py-5 flex justify-between items-center z-40 border-b border-gray-900 bg-black/70 backdrop-blur-xl shrink-0">
+      <a href="Admin/admin-login.html" class="flex items-center space-x-3 space-x-reverse group" title="تسجيل دخول المشرفين">
+        <div class="w-10 h-10 bg-emerald-500/10 border border-emerald-500/40 rounded-2xl flex items-center justify-center text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.2)] group-hover:bg-emerald-500 group-hover:text-black transition duration-300">
+          <i class="fa-solid fa-code-branch text-sm rotate-90"></i>
+        </div>
+        <span class="font-black text-sm tracking-wider text-emerald-400">GREEN.PULSE</span>
+      </a>
+
+      <!-- أزرار الدخول السريع -->
+      <div class="flex items-center space-x-2 space-x-reverse text-xs">
+        <a href="Clients/login.html" class="px-3 py-2 rounded-xl bg-indigo-950/80 border border-indigo-500/30 text-indigo-400 font-bold hover:bg-indigo-900 transition shadow-sm">الأفراد</a>
+        <a href="merchants/login.html" class="px-3 py-2 rounded-xl bg-emerald-950/80 border border-emerald-500/30 text-emerald-400 font-bold hover:bg-emerald-900 transition shadow-sm">التجار</a>
+      </div>
+    </header>
+
+    <!-- المحتوى الرئيسي -->
+    <main class="flex-1 w-full px-6 py-8 flex flex-col items-center justify-center relative z-10 space-y-8">
+      
+      <!-- قسم العنوان الرئيسي -->
+      <div class="text-center space-y-4 max-w-2xl mx-auto">
+        <div class="inline-flex items-center space-x-2 space-x-reverse bg-emerald-500/10 text-emerald-400 text-xs font-extrabold px-4 py-1.5 rounded-full border border-emerald-500/20 tracking-wide uppercase shadow-inner">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+          <span>SYSTEM // SECURE_NODE</span>
+        </div>
+
+        <h1 class="text-xl sm:text-2xl font-black text-white leading-tight">
+          الجيل القادم لإدارة العلاقات والمديونيات الرقمية
+        </h1>
+
+        <p class="text-gray-400 text-xs leading-relaxed font-medium">
+          بنية أساسية متطورة تمنح التجار والأفراد تحكماً كاملاً عبر واجهات ذكية ومؤمنة بالكامل.
+        </p>
+      </div>
+
+      <!-- عنصر بصري تفاعلي بارز -->
+      <div class="relative py-2">
+        <div class="absolute -inset-4 bg-gradient-to-r from-emerald-500 to-indigo-500 rounded-3xl blur-xl opacity-20 animate-pulse"></div>
+        <div class="relative w-20 h-20 bg-gray-950 border border-emerald-500/40 rounded-3xl flex items-center justify-center text-emerald-400 shadow-2xl">
+          <i class="fa-solid fa-fingerprint text-3xl animate-pulse"></i>
+        </div>
+      </div>
+
+      <!-- شبكة الاختيارات السيبرانية (الأفراد والتجار) -->
+      <div class="grid grid-cols-1 gap-4 w-full">
+        <!-- الأفراد -->
+        <a href="Clients/login.html" class="group bg-gray-900/40 hover:bg-gray-900/80 p-5 rounded-2xl neon-border-indigo transition duration-300 flex items-center justify-between relative overflow-hidden">
+          <div class="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-indigo-500 to-transparent opacity-60"></div>
+          <div class="flex items-center space-x-4 space-x-reverse">
+            <div class="w-11 h-11 bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 rounded-xl flex items-center justify-center text-base shadow-inner group-hover:scale-110 transition">
+              <i class="fa-solid fa-user-astronaut"></i>
+            </div>
+            <div>
+              <div class="font-black text-white text-sm mb-0.5">قطاع الأفراد</div>
+              <div class="text-[11px] text-gray-400 font-medium">بوابة الخدمات والوصول للمستفيدين</div>
+            </div>
+          </div>
+          <i class="fa-solid fa-arrow-left text-indigo-400 text-xs opacity-0 group-hover:opacity-100 transition transform -translate-x-2 group-hover:translate-x-0"></i>
+        </a>
+
+        <!-- التجار -->
+        <a href="merchants/login.html" class="group bg-gray-900/40 hover:bg-gray-900/80 p-5 rounded-2xl neon-border transition duration-300 flex items-center justify-between relative overflow-hidden">
+          <div class="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-emerald-500 to-transparent opacity-60"></div>
+          <div class="flex items-center space-x-4 space-x-reverse">
+            <div class="w-11 h-11 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 rounded-xl flex items-center justify-center text-base shadow-inner group-hover:scale-110 transition">
+              <i class="fa-solid fa-network-wired"></i>
+            </div>
+            <div>
+              <div class="font-black text-white text-sm mb-0.5">قطاع التجار</div>
+              <div class="text-[11px] text-gray-400 font-medium">إدارة المتاجر والعمليات المالية</div>
+            </div>
+          </div>
+          <i class="fa-solid fa-arrow-left text-emerald-400 text-xs opacity-0 group-hover:opacity-100 transition transform -translate-x-2 group-hover:translate-x-0"></i>
+        </a>
+      </div>
+
+    </main>
+
+    <!-- تذييل الصفحة الاحترافي -->
+    <footer class="w-full py-4 text-center text-gray-500 text-[11px] border-t border-gray-900 bg-black/80 shrink-0">
+      منصة البصمات الخضراء &copy; 2026
+    </footer>
+
+  </div>
+
+  <script>
+    function showNotice(msg) {
+      const toast = document.getElementById('toast-notification');
+      const text = document.getElementById('toast-message');
+      text.innerText = msg;
+      toast.classList.remove('hidden');
+      setTimeout(() => {
+        toast.classList.add('hidden');
+      }, 3000);
+    }
+  </script>
+</body>
+</html>

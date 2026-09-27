@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  
+  <!-- إعدادات الـ PWA -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#4f46e5">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="البصمات الخضراء">
+  <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+
+  <title>لوحة الأفراد - منصة البصمات الخضراء</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Cairo', sans-serif; }
+    
+    @keyframes marquee {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(50%); }
+    }
+    .marquee-container {
+      overflow: hidden;
+      display: flex;
+      width: 100%;
+      position: relative;
+      white-space: nowrap;
+    }
+    .animate-marquee {
+      display: flex;
+      width: max-content;
+      animation: marquee 30s linear infinite;
+      will-change: transform;
+    }
+    .animate-marquee:hover {
+      animation-play-state: paused;
+    }
+
+    .slide-track-item {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+      will-change: transform;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 10px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 min-h-screen flex flex-col text-gray-800 relative selection:bg-indigo-500 selection:text-white">
+
+  <!-- إشعار عائم -->
+  <div id="toast-notification" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 hidden bg-gray-900 text-white text-xs font-bold px-4 py-2 rounded-xl shadow-2xl flex items-center space-x-2 space-x-reverse transition-all duration-300">
+    <i id="toast-icon" class="fa-solid fa-circle-check text-emerald-400 text-sm"></i>
+    <span id="toast-message">تمت العملية بنجاح</span>
+  </div>
+
+  <!-- القائمة الجانبية المنسدلة (Drawer) على مستوى الشاشة بالكامل -->
+  <div id="sidebar-drawer" class="fixed inset-0 bg-black/60 z-50 hidden flex justify-start transition-opacity backdrop-blur-sm">
+    <div class="bg-white w-72 sm:w-80 h-full shadow-2xl p-5 flex flex-col justify-between overflow-y-auto custom-scrollbar">
+      <div class="space-y-4">
+        <div class="flex justify-between items-center border-b border-gray-100 pb-3">
+          <h3 class="font-extrabold text-sm text-indigo-900">قائمة التنقل</h3>
+          <button onclick="toggleSidebar()" class="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-xl flex items-center justify-center text-gray-600 transition">
+            <i class="fa-solid fa-xmark text-xs"></i>
+          </button>
+        </div>
+
+        <div class="bg-amber-50 p-3 rounded-2xl text-center border border-amber-200 shadow-sm">
+          <div class="text-amber-900 font-extrabold text-xs">لوحة الأفراد</div>
+          <div class="text-[11px] text-rose-600 font-bold mt-1">الحساب: <span id="header-client-name">جاري التحميل...</span></div>
+        </div>
+
+        <nav class="space-y-1.5 font-semibold text-xs">
+          <button onclick="showTab('dashboard'); toggleSidebar();" class="w-full text-right px-3.5 py-3 rounded-xl hover:bg-gray-100 text-gray-700 flex items-center space-x-3 space-x-reverse transition">
+            <i class="fa-solid fa-house text-gray-500 w-4"></i>
+            <span>الرئيسية</span>
+          </button>
+          <button onclick="showTab('reports'); toggleSidebar();" class="w-full text-right px-3.5 py-3 rounded-xl hover:bg-gray-100 text-gray-700 flex items-center space-x-3 space-x-reverse transition">
+            <i class="fa-solid fa-chart-column text-gray-500 w-4"></i>
+            <span>التقارير</span>
+          </button>
+          <button onclick="showTab('favorites'); toggleSidebar();" class="w-full text-right px-3.5 py-3 rounded-xl hover:bg-gray-100 text-gray-700 flex items-center space-x-3 space-x-reverse transition">
+            <i class="fa-solid fa-heart text-gray-500 w-4"></i>
+            <span>المفضلة</span>
+          </button>
+          <button onclick="showTab('notifications'); toggleSidebar();" class="w-full text-right px-3.5 py-3 rounded-xl hover:bg-gray-100 text-gray-700 flex items-center justify-between transition">
+            <div class="flex items-center space-x-3 space-x-reverse">
+              <i class="fa-solid fa-bell text-gray-500 w-4"></i>
+              <span>الاشعارات</span>
+            </div>
+            <span id="notifications-badge" class="hidden bg-rose-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full shadow-sm">0</span>
+          </button>
+          <button onclick="showTab('messages'); toggleSidebar();" class="w-full text-right px-3.5 py-3 rounded-xl hover:bg-gray-100 text-gray-700 flex items-center space-x-3 space-x-reverse transition">
+            <i class="fa-solid fa-headset text-gray-500 w-4"></i>
+            <span>تواصل معنا</span>
+          </button>
+          <button onclick="openSettingsModal(); toggleSidebar();" class="w-full text-right px-3.5 py-3 rounded-xl hover:bg-gray-100 text-gray-700 flex items-center space-x-3 space-x-reverse transition">
+            <i class="fa-solid fa-user text-gray-500 w-4"></i>
+            <span>حسابي</span>
+          </button>
+        </nav>
+      </div>
+
+      <div class="border-t border-gray-100 pt-3 space-y-1.5">
+        <button onclick="openDeleteAccountModal()" class="w-full text-right px-3.5 py-2.5 rounded-xl hover:bg-rose-50 text-rose-600 font-semibold text-xs flex items-center space-x-3 space-x-reverse transition">
+          <i class="fa-solid fa-user-xmark text-rose-500 w-4"></i>
+          <span>حذف الحساب</span>
+        </button>
+        <button onclick="handleLogout()" class="w-full text-right px-3.5 py-2.5 rounded-xl hover:bg-red-50 text-red-600 font-semibold text-xs flex items-center space-x-3 space-x-reverse transition">
+          <i class="fa-solid fa-right-from-bracket text-red-500 w-4"></i>
+          <span>تسجيل الخروج</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- الشريط العلوي الاحترافي للمنصة -->
+  <header class="w-full bg-slate-900 border-b border-slate-800 py-4 px-6 sm:px-10 flex justify-between items-center z-40 shrink-0">
+    <div class="flex items-center space-x-3 space-x-reverse">
+      <button onclick="toggleSidebar()" class="w-9 h-9 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl border border-slate-700 flex items-center justify-center transition shadow-sm" title="القائمة">
+        <i class="fa-solid fa-bars text-xs"></i>
+      </button>
+      <span class="text-xs sm:text-sm font-bold text-white tracking-wide">منصة البصمات الخضراء</span>
+    </div>
+    <div class="text-xs text-slate-400 font-medium hidden sm:block">لوحة تحكم المستفيد</div>
+  </header>
+
+  <!-- المحتوى الأساسي بملء الشاشة وبمرونة تامة -->
+  <main class="flex-1 w-full max-w-5xl mx-auto px-4 sm:px-6 py-6 flex flex-col space-y-6">
+    
+    <!-- تبويب الرئيسية -->
+    <div id="tab-dashboard" class="flex-1 flex flex-col space-y-5">
+      <div class="space-y-4">
+        <!-- سلايدر الإعلانات بعرض كامل الشاشة -->
+        <div class="space-y-2">
+          <div id="slider-image-box" class="bg-white border border-gray-200 rounded-2xl p-2 shadow-md h-[160px] sm:h-[180px] overflow-hidden relative">
+            <div class="text-center text-gray-400 text-xs h-full flex items-center justify-center">جاري تحميل إعلانات السلايدر...</div>
+          </div>
+          <div class="flex items-center justify-center space-x-1.5 space-x-reverse">
+            <span id="dot-0" class="w-2.5 h-2.5 rounded-full bg-amber-500 transition-all duration-300"></span>
+            <span id="dot-1" class="w-2.5 h-2.5 rounded-full bg-gray-300 transition-all duration-300"></span>
+            <span id="dot-2" class="w-2.5 h-2.5 rounded-full bg-gray-300 transition-all duration-300"></span>
+          </div>
+        </div>
+
+        <div class="bg-amber-100 border border-amber-300 py-2.5 px-4 rounded-2xl shadow-sm marquee-container relative">
+          <div id="dynamic-ticker-content" class="animate-marquee text-amber-900 font-bold text-xs items-center">
+            <span><i class="fa-solid fa-bullhorn text-amber-600 ml-2"></i>جاري تحميل الشريط المتحرك...</span>
+          </div>
+        </div>
+
+        <div id="pinned-merchant-container"></div>
+      </div>
+
+      <div class="bg-white border border-gray-200 rounded-3xl p-5 shadow-md flex-1 flex flex-col">
+        <div class="text-xs sm:text-sm font-bold text-gray-700 px-1 pb-3 border-b border-gray-100">قائمة المكاتب المتاحة:</div>
+        <div id="merchants-cards-container" class="space-y-3 pt-3 flex-1 overflow-y-auto custom-scrollbar">
+          <div class="bg-white p-6 rounded-2xl border border-gray-200 text-center text-gray-400 text-xs">
+            جاري تحميل قائمة التجار...
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- تبويب التقارير -->
+    <div id="tab-reports" class="hidden flex-1 flex flex-col space-y-4">
+      <div class="bg-white p-5 rounded-3xl border border-gray-200 shadow-md flex justify-between items-center">
+        <div>
+          <h3 class="text-sm sm:text-base font-black text-indigo-900">التقارير والمديونيات</h3>
+          <p class="text-xs text-gray-500 font-semibold mt-0.5">المبالغ المتبقية عليك للمكاتب والتجار</p>
+        </div>
+        <button onclick="window.print()" class="bg-gray-100 border border-gray-200 text-gray-700 px-4 py-2 rounded-xl text-xs font-bold hover:bg-gray-200 shadow-sm transition">
+          <i class="fa-solid fa-print ml-1.5"></i> طباعة
+        </button>
+      </div>
+      
+      <div id="reports-container" class="space-y-3">
+        <div class="bg-white border border-gray-200 rounded-3xl shadow-md p-6 text-center text-gray-400 text-xs">
+          جاري تحميل الالتزامات المالية...
+        </div>
+      </div>
+    </div>
+
+    <!-- تبويب المفضلة -->
+    <div id="tab-favorites" class="hidden flex-1 flex flex-col space-y-4">
+      <div class="bg-white p-6 rounded-3xl border border-gray-200 shadow-md space-y-4">
+        <div class="flex items-center space-x-3 space-x-reverse border-b border-gray-100 pb-3">
+          <div class="w-10 h-10 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center text-base">
+            <i class="fa-solid fa-heart"></i>
+          </div>
+          <div>
+            <h3 class="text-sm sm:text-base font-bold text-indigo-900">المكاتب المفضلة</h3>
+            <p class="text-xs text-gray-400">قائمة المكاتب التي قمت بحفظها للوصول السريع</p>
+          </div>
+        </div>
+        <div id="favorites-container" class="space-y-3">
+          <p class="text-center py-6 text-gray-400 text-xs">لا توجد مكاتب في المفضلة حالياً.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- تبويب الإشعارات -->
+    <div id="tab-notifications" class="hidden flex-1 flex flex-col space-y-4">
+      <div class="bg-white p-6 rounded-3xl border border-gray-200 shadow-md">
+        <div class="flex items-center space-x-3 space-x-reverse mb-4 border-b border-gray-100 pb-3">
+          <div class="w-10 h-10 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center text-base">
+            <i class="fa-solid fa-bell"></i>
+          </div>
+          <div>
+            <h3 class="text-sm sm:text-base font-bold text-indigo-900">الإشعارات والتنبيهات</h3>
+            <p class="text-xs text-gray-400">رسائل وتحديثات الإدارة والمكاتب</p>
+          </div>
+        </div>
+        <div id="notifications-list" class="space-y-3">
+          <p class="text-center py-6 text-gray-400 text-xs">جاري تحميل الإشعارات...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- تبويب تواصل معنا -->
+    <div id="tab-messages" class="hidden flex-1 flex flex-col space-y-4">
+      <div class="bg-white p-6 rounded-3xl border border-gray-200 shadow-md space-y-4 max-w-2xl mx-auto w-full">
+        <div class="flex items-center space-x-3 space-x-reverse border-b border-gray-100 pb-3">
+          <div class="w-10 h-10 bg-sky-50 text-sky-600 rounded-2xl flex items-center justify-center text-base">
+            <i class="fa-solid fa-headset"></i>
+          </div>
+          <div>
+            <h3 class="text-sm sm:text-base font-bold text-indigo-900">تواصل معنا</h3>
+            <p class="text-xs text-gray-400">إرسال استفسار أو ملاحظة للدعم الفني</p>
+          </div>
+        </div>
+        <form onsubmit="handleSendMessage(event)" class="space-y-4 text-xs font-semibold">
+          <div>
+            <label class="block text-xs font-bold text-gray-600 mb-1.5">موضوع الملاحظة</label>
+            <input type="text" id="msg-subject" required placeholder="أدخل موضوع الاستفسار..." class="w-full border border-gray-200 p-3 rounded-xl outline-none focus:border-indigo-500 text-xs">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-gray-600 mb-1.5">التفاصيل</label>
+            <textarea id="msg-body" rows="4" required placeholder="اكتب تفاصيل الرسالة هنا..." class="w-full border border-gray-200 p-3 rounded-xl outline-none focus:border-indigo-500 resize-none text-xs"></textarea>
+          </div>
+          <button type="submit" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-bold p-3 rounded-xl shadow-lg shadow-sky-600/20 transition flex items-center justify-center space-x-2 space-x-reverse text-xs">
+            <i class="fa-solid fa-paper-plane"></i>
+            <span>ارسل الملاحظة</span>
+          </button>
+        </form>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- تذييل الصفحة -->
+  <footer class="w-full py-4 text-center text-slate-500 text-xs border-t border-slate-900 bg-slate-950 shrink-0 mt-8">
+    منصة البصمات الخضراء &copy; 2026 - جميع الحقوق محفوظة
+  </footer>
+
+  <!-- النوافذ المنبثقة (Modals) بملء الشاشة وبتصميم مركزي أنيق -->
+  <div id="modal-debts-details" class="fixed inset-0 bg-black/60 hidden items-center justify-center p-4 z-50 backdrop-blur-sm">
+    <div class="bg-white w-full max-w-md rounded-3xl p-6 relative shadow-2xl text-right space-y-4">
+      <button onclick="closeModal('modal-debts-details')" class="absolute top-4 left-4 text-gray-400 hover:text-black">
+        <i class="fa-solid fa-xmark text-xl"></i>
+      </button>
+      <div class="text-center space-y-1">
+        <h3 class="text-base font-black text-indigo-950">سجل الفواتير والمديونيات</h3>
+        <p class="text-xs text-gray-500 font-semibold">العميل: <span id="modal-debt-client-name" class="text-rose-600 font-bold">-</span></p>
+      </div>
+      <div class="overflow-x-auto border border-gray-100 rounded-2xl max-h-60 custom-scrollbar">
+        <table class="w-full text-right text-xs">
+          <thead class="bg-gray-50 text-gray-500 font-bold border-b border-gray-100">
+            <tr>
+              <th class="py-3 px-3">المبلغ</th>
+              <th class="py-3 px-3">الفاتورة</th>
+              <th class="py-3 px-3">التاريخ</th>
+            </tr>
+          </thead>
+          <tbody id="modal-debts-table-body" class="divide-y divide-gray-100 text-gray-700 font-semibold"></tbody>
+        </table>
+      </div>
+      <button type="button" onclick="closeModal('modal-debts-details')" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-3 rounded-xl text-xs transition">إغلاق</button>
+    </div>
+  </div>
+
+  <div id="modal-merchant-details" class="fixed inset-0 bg-black/60 hidden items-center justify-center p-4 z-50 backdrop-blur-sm">
+    <div class="bg-white w-full max-w-sm rounded-3xl p-6 relative shadow-2xl text-right space-y-4">
+      <button onclick="closeModal('modal-merchant-details')" class="absolute top-4 left-4 text-gray-400 hover:text-black"><i class="fa-solid fa-xmark text-xl"></i></button>
+      <div class="text-center border-b border-gray-100 pb-3">
+        <h3 class="text-sm font-extrabold text-gray-900">تفاصيل المكتب</h3>
+      </div>
+      <div class="space-y-3 text-xs">
+        <div class="bg-gray-50 p-3.5 rounded-2xl border border-gray-100">
+          <div class="text-[11px] text-gray-400 mb-1">اسم المكتب</div>
+          <div id="modal-merchant-name" class="font-bold text-gray-900 text-sm">-</div>
+        </div>
+        <div class="bg-gray-50 p-3.5 rounded-2xl border border-gray-100">
+          <div class="text-[11px] text-gray-400 mb-1">رقم الجوال</div>
+          <div id="modal-merchant-phone" class="font-bold text-gray-900 text-sm" dir="ltr">-</div>
+        </div>
+      </div>
+      <button type="button" onclick="closeModal('modal-merchant-details')" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-3 rounded-xl text-xs transition">إغلاق</button>
+    </div>
+  </div>
+
+  <div id="modal-account-settings" class="fixed inset-0 bg-black/60 hidden items-center justify-center p-4 z-50 backdrop-blur-sm">
+    <div class="bg-white w-full max-w-md rounded-3xl p-6 relative shadow-2xl text-right space-y-4">
+      <button onclick="closeModal('modal-account-settings')" class="absolute top-4 left-4 text-gray-400 hover:text-black"><i class="fa-solid fa-xmark text-xl"></i></button>
+      <div class="text-center border-b border-gray-100 pb-3">
+        <h3 class="text-sm font-extrabold text-gray-900">حسابي الشخصي</h3>
+      </div>
+      <form onsubmit="handleSaveSettings(event)" class="space-y-3 text-xs font-semibold">
+        <div>
+          <label class="block text-xs font-bold text-gray-600 mb-1">الاسم الكامل</label>
+          <input type="text" id="set-client-name" readonly class="w-full border p-3 rounded-xl bg-gray-100 text-gray-500 text-xs cursor-not-allowed">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-gray-600 mb-1">رقم الهوية الوطنية</label>
+          <input type="text" id="set-id" readonly class="w-full border p-3 rounded-xl bg-gray-100 text-gray-500 text-xs cursor-not-allowed">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-gray-600 mb-1">رقم الجوال</label>
+          <input type="text" id="set-phone" required maxlength="10" class="w-full border p-3 rounded-xl outline-none focus:border-indigo-500 text-xs">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-gray-600 mb-1">البريد الإلكتروني</label>
+          <input type="email" id="set-email" required class="w-full border p-3 rounded-xl outline-none focus:border-indigo-500 text-xs">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-gray-600 mb-1">المدينة</label>
+          <input type="text" id="set-city" required class="w-full border p-3 rounded-xl outline-none focus:border-indigo-500 text-xs">
+        </div>
+        <div class="flex gap-3 pt-2">
+          <button type="submit" class="w-1/2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl text-xs transition shadow-md">حفظ التغييرات</button>
+          <button type="button" onclick="closeModal('modal-account-settings')" class="w-1/2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-3 rounded-xl text-xs transition">إغلاق</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="modal-delete-account" class="fixed inset-0 bg-black/60 hidden items-center justify-center p-4 z-50 backdrop-blur-sm">
+    <div class="bg-white w-full max-w-sm rounded-3xl p-6 relative shadow-2xl text-center space-y-4">
+      <div class="w-12 h-12 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto text-lg">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+      </div>
+      <h3 class="text-sm font-bold text-gray-900">تأكيد حذف الحساب</h3>
+      <p class="text-xs text-gray-500 leading-relaxed">تحذير: هل أنت متأكد من رغبتك في حذف حسابك نهائياً من النظام؟</p>
+      <div class="flex gap-3 pt-2">
+        <button type="button" onclick="closeModal('modal-delete-account')" class="w-1/2 bg-gray-100 text-gray-700 font-bold py-3 rounded-xl text-xs">إلغاء</button>
+        <button type="button" onclick="confirmDeleteAccount()" class="w-1/2 bg-rose-600 hover:bg-rose-700 text-white font-bold py-3 rounded-xl text-xs shadow-md">حذف الحساب</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { 
+      getFirestore, collection, getDocs, addDoc, doc, updateDoc, deleteDoc, query, where, serverTimestamp, onSnapshot 
+    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBE-mGCcnUCgscoECF-4ncW0ZuB57Uo6CM",
+      authDomain: "green-prints-c6f65.firebaseapp.com",
+      projectId: "green-prints-c6f65",
+      storageBucket: "green-prints-c6f65.firebasestorage.app",
+      messagingSenderId: "726286369175",
+      appId: "1:726286369175:web:3137f5597c177aeb8c84d2",
+      measurementId: "G-7XLHB3RSZR"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    let currentClientNationalId = localStorage.getItem("currentClientNationalId");
+    let currentClientPhone = "";
+    let currentClientDocId = null;
+    let currentClientName = "المستفيد";
+
+    window.toggleSidebar = function() {
+      const sidebar = document.getElementById('sidebar-drawer');
+      if (sidebar.classList.contains('hidden')) {
+        sidebar.classList.remove('hidden');
+      } else {
+        sidebar.classList.add('hidden');
+      }
+    };
+
+    window.showToast = function(msg, type = 'success') {
+      const toast = document.getElementById('toast-notification');
+      const icon = document.getElementById('toast-icon');
+      const text = document.getElementById('toast-message');
+
+      text.innerText = msg;
+      icon.className = type === 'error' ? "fa-solid fa-circle-exclamation text-rose-400 text-sm" : "fa-solid fa-circle-check text-emerald-400 text-sm";
+      toast.classList.remove('hidden');
+      setTimeout(() => { toast.classList.add('hidden'); }, 3500);
+    };
+
+    window.handleLogout = function() {
+      localStorage.clear();
+      showToast("تم تسجيل الخروج بنجاح", "info");
+      setTimeout(() => { window.location.href = "login.html"; }, 1000);
+    };
+
+    window.openDeleteAccountModal = function() {
+      document.getElementById('sidebar-drawer').classList.add('hidden');
+      document.getElementById('modal-delete-account').classList.remove('hidden');
+      document.getElementById('modal-delete-account').classList.add('flex');
+    };
+
+    window.confirmDeleteAccount = async function() {
+      try {
+        if (currentClientDocId) {
+          await deleteDoc(doc(db, "clients", currentClientDocId));
+        }
+        localStorage.clear();
+        showToast("تم حذف الحساب بنجاح", "success");
+        setTimeout(() => { window.location.href = "register.html"; }, 1200);
+      } catch (err) {
+        localStorage.clear();
+        window.location.href = "register.html";
+      }
+    };
+
+    window.showMerchantDetails = function(name, phone) {
+      document.getElementById('modal-merchant-name').innerText = name || 'مكتب معتمد';
+      document.getElementById('modal-merchant-phone').innerText = phone || 'غير متوفر';
+      const modal = document.getElementById('modal-merchant-details');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    };
+
+    window.showDebtsDetailsModal = function(invoicesJson, fallbackBalance, fallbackDate) {
+      let invoices = [];
+      try {
+        invoices = JSON.parse(decodeURIComponent(invoicesJson));
+      } catch(e) {
+        invoices = [];
+      }
+
+      if (!invoices || invoices.length === 0) {
+        invoices = [{
+          amount: fallbackBalance || 0,
+          invoiceNumber: "فاتورة #01",
+          date: fallbackDate || "-"
+        }];
+      }
+
+      document.getElementById('modal-debt-client-name').innerText = currentClientName;
+      const tbody = document.getElementById('modal-debts-table-body');
+
+      let html = '';
+      invoices.forEach(inv => {
+        html += `
+          <tr>
+            <td class="py-3 px-3 text-rose-600 font-bold">${inv.amount || 0} ر.س</td>
+            <td class="py-3 px-3">${inv.invoiceNumber || 'فاتورة'}</td>
+            <td class="py-3 px-3">${inv.date || '-'}</td>
+          </tr>
+        `;
+      });
+      tbody.innerHTML = html;
+
+      const modal = document.getElementById('modal-debts-details');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    };
+
+    window.getFavorites = function() {
+      const favs = localStorage.getItem('client_favorites');
+      return favs ? JSON.parse(favs) : [];
+    };
+
+    window.toggleFavorite = function(name, city, phone) {
+      let favs = window.getFavorites();
+      const index = favs.findIndex(item => item.name === name);
+
+      if (index > -1) {
+        favs.splice(index, 1);
+        showToast("تم إزالة المكتب من المفضلة", "info");
+      } else {
+        favs.push({ name, city, phone });
+        showToast("تم إضافة المكتب للمفضلة", "success");
+      }
+
+      localStorage.setItem('client_favorites', JSON.stringify(favs));
+      window.loadMerchantsCards();
+      window.loadFavoritesTab();
+    };
+
+    window.loadFavoritesTab = function() {
+      const container = document.getElementById('favorites-container');
+      const favs = window.getFavorites();
+
+      if (favs.length === 0) {
+        container.innerHTML = `<p class="text-center py-6 text-gray-400 text-xs">لا توجد مكاتب في المفضلة حالياً.</p>`;
+        return;
+      }
+
+      let html = '';
+      favs.forEach(item => {
+        html += `
+          <div class="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm flex items-center justify-between">
+            <div class="flex items-center space-x-3 space-x-reverse">
+              <div class="w-10 h-10 bg-rose-50 text-rose-600 rounded-xl flex items-center justify-center text-base">
+                <i class="fa-solid fa-store"></i>
+              </div>
+              <div>
+                <h4 class="font-bold text-gray-900 text-xs sm:text-sm">${item.name}</h4>
+                <p class="text-[11px] text-gray-400">${item.city}</p>
+              </div>
+            </div>
+            <div class="flex items-center space-x-2 space-x-reverse">
+              <button onclick="toggleFavorite('${item.name}', '${item.city}', '${item.phone}')" class="text-rose-500 p-2">
+                <i class="fa-solid fa-heart text-base"></i>
+              </button>
+              <button onclick="showMerchantDetails('${item.name}', '${item.phone}')" class="bg-rose-50 hover:bg-rose-100 text-rose-600 px-3.5 py-1.5 rounded-xl text-xs font-bold transition">
+                عرض
+              </button>
+            </div>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+    };
+
+    window.loadReportsTab = async function() {
+      const container = document.getElementById('reports-container');
+      try {
+        currentClientNationalId = localStorage.getItem("currentClientNationalId");
+        if (!currentClientNationalId) {
+          container.innerHTML = `<div class="bg-white p-6 rounded-2xl text-center text-gray-400 text-xs">لم يتم العثور على هوية المستفيد.</div>`;
+          return;
+        }
+
+        const q = query(collection(db, "merchant_clients"), where("id_number", "==", currentClientNationalId));
+        const querySnapshot = await getDocs(q);
+
+        if (querySnapshot.empty) {
+          container.innerHTML = `<div class="bg-white p-6 rounded-2xl text-center text-gray-400 text-xs">لا توجد مطالبات أو التزامات حالياً.</div>`;
+          return;
+        }
+
+        let html = '';
+        for (const docSnap of querySnapshot.docs) {
+          const data = docSnap.data();
+          const commercialRecord = data.commercialRecord || '-';
+          const currentBalance = data.currentBalance || 0;
+          const lastTransactionDate = data.lastTransactionDate || '-';
+          const invoices = data.invoices || [];
+
+          let officeName = 'مكتب معتمد';
+          let officePhone = data.phone || '';
+
+          if (commercialRecord !== '-') {
+            const mQuery = query(collection(db, "merchants"), where("commercialRecord", "==", commercialRecord));
+            const mSnap = await getDocs(mQuery);
+            if (!mSnap.empty) {
+              const mData = mSnap.docs[0].data();
+              officeName = mData.officeName || mData.name || 'مكتب معتمد';
+              officePhone = mData.phone || officePhone;
+            }
+          }
+
+          const encodedInvoices = encodeURIComponent(JSON.stringify(invoices));
+
+          html += `
+            <div class="bg-white border border-gray-200 rounded-3xl p-5 shadow-md space-y-3">
+              <div class="flex justify-between items-start border-b border-gray-100 pb-3">
+                <div class="flex items-center space-x-3 space-x-reverse">
+                  <div class="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center text-base">
+                    <i class="fa-solid fa-file-invoice-dollar"></i>
+                  </div>
+                  <div>
+                    <h4 onclick="showMerchantDetails('${officeName}', '${officePhone}')" class="font-bold text-gray-900 text-xs sm:text-sm cursor-pointer hover:text-indigo-600">${officeName}</h4>
+                  </div>
+                </div>
+                <div class="text-left">
+                  <span class="text-[10px] text-gray-400 block">المتبقي</span>
+                  <span class="text-sm sm:text-base font-black text-rose-600">${currentBalance} ر.س</span>
+                </div>
+              </div>
+              <div class="flex justify-between items-center text-xs text-gray-500 pt-1">
+                <span>التحديث: ${lastTransactionDate}</span>
+                <button onclick="showDebtsDetailsModal('${encodedInvoices}', '${currentBalance}', '${lastTransactionDate}')" class="text-indigo-600 font-bold hover:underline">
+                  عرض التفاصيل
+                </button>
+              </div>
+            </div>
+          `;
+        }
+
+        container.innerHTML = html;
+      } catch (err) {
+        container.innerHTML = `<div class="bg-white p-6 rounded-2xl text-center text-rose-500 text-xs">حدث خطأ أثناء تحميل التقارير.</div>`;
+      }
+    };
+
+    let currentSlideIndex = 0;
+    let sliderInterval = null;
+
+    window.setupSliderImagesTicker = function(imagesList) {
+      const sliderBox = document.getElementById('slider-image-box');
+      if (!sliderBox || imagesList.length === 0) return;
+
+      if (sliderInterval) clearInterval(sliderInterval);
+
+      let slidesHtml = '';
+      const activeList = imagesList.slice(0, 3);
+
+      activeList.forEach((url, idx) => {
+        const isInitial = idx === 0;
+        slidesHtml += `
+          <div id="slide-item-${idx}" class="slide-track-item ${isInitial ? 'translate-x-0 z-10' : 'translate-x-full z-0'}">
+            <img src="${url}" alt="إعلان" class="w-full h-full object-cover rounded-2xl border border-gray-100 shadow-sm">
+          </div>
+        `;
+      });
+      sliderBox.innerHTML = slidesHtml;
+
+      function goToSlide(nextIndex) {
+        const prevIndex = currentSlideIndex;
+        currentSlideIndex = nextIndex;
+
+        const prevEl = document.getElementById(`slide-item-${prevIndex}`);
+        const nextEl = document.getElementById(`slide-item-${nextIndex}`);
+
+        if (prevEl && nextEl) {
+          prevEl.style.zIndex = "1";
+          nextEl.style.zIndex = "2";
+          nextEl.style.transition = "transform 0.8s cubic-bezier(0.4, 0, 0.2, 1)";
+          nextEl.style.transform = "translateX(0)";
+
+          setTimeout(() => {
+            prevEl.style.transition = "none";
+            prevEl.style.transform = "translateX(100%)";
+          }, 800);
+        }
+
+        for (let i = 0; i < 3; i++) {
+          const dot = document.getElementById(`dot-${i}`);
+          if (dot) {
+            dot.className = i === currentSlideIndex ? "w-5 h-2.5 rounded-full bg-amber-500 transition-all" : "w-2.5 h-2.5 rounded-full bg-gray-300 transition-all";
+          }
+        }
+      }
+
+      sliderInterval = setInterval(() => {
+        let nextIndex = (currentSlideIndex + 1) % activeList.length;
+        goToSlide(nextIndex);
+      }, 4000);
+    };
+
+    window.loadSliderImages = function() {
+      onSnapshot(collection(db, "slider_images"), (querySnapshot) => {
+        let sliderImagesList = [];
+        querySnapshot.forEach(docSnap => {
+          const data = docSnap.data();
+          if (data.url) sliderImagesList.push(data.url);
+        });
+
+        if (sliderImagesList.length === 0) {
+          sliderImagesList = [
+            "https://via.placeholder.com/800x200?text=Ad+1",
+            "https://via.placeholder.com/800x200?text=Ad+2",
+            "https://via.placeholder.com/800x200?text=Ad+3"
+          ];
+        }
+        window.setupSliderImagesTicker(sliderImagesList);
+      });
+    };
+
+    window.loadDynamicTicker = function() {
+      const container = document.getElementById('dynamic-ticker-content');
+      onSnapshot(collection(db, "ads"), (querySnapshot) => {
+        let items = [];
+        querySnapshot.forEach(docSnap => {
+          const data = docSnap.data();
+          if (data.officeName) items.push(data.officeName);
+          if (data.name) items.push(data.name);
+          if (data.text) items.push(data.text);
+        });
+
+        if (items.length === 0) {
+          items = ["مكتب تبوك التساهيل", "مكتب مهلة التساهيل للاقساط"];
+        }
+
+        let singleHtml = '';
+        items.forEach(text => {
+          singleHtml += `<span class="inline-flex items-center mx-4 py-1 px-3 bg-amber-200/50 rounded-xl border border-amber-300 text-amber-900"><i class="fa-solid fa-bullhorn text-amber-600 ml-2"></i>${text}</span>`;
+        });
+        container.innerHTML = singleHtml + singleHtml + singleHtml;
+      });
+    };
+
+    window.initRealtimeNotificationsListener = function() {
+      onSnapshot(collection(db, "admin_client_messages"), (snapshot) => {
+        currentClientNationalId = localStorage.getItem("currentClientNationalId");
+        let messagesMap = new Map();
+
+        snapshot.forEach(docSnap => {
+          const data = docSnap.data();
+          const matchPhone = currentClientPhone && String(data.clientPhone || data.phone || '') === String(currentClientPhone);
+          const matchId = currentClientNationalId && String(data.nationalId || data.id_number || '') === String(currentClientNationalId);
+          const isBroadcast = !data.clientPhone && !data.nationalId && !data.id_number;
+
+          if (matchPhone || matchId || isBroadcast) {
+            messagesMap.set(docSnap.id, data);
+          }
+        });
+
+        let totalMessages = messagesMap.size;
+        let lastSeenCount = parseInt(localStorage.getItem('last_seen_messages_count') || '0');
+        const badge = document.getElementById('notifications-badge');
+
+        if (badge) {
+          if (totalMessages > lastSeenCount) {
+            badge.innerText = totalMessages - lastSeenCount;
+            badge.classList.remove('hidden');
+          } else {
+            badge.classList.add('hidden');
+          }
+        }
+      });
+    };
+
+    window.loadNotificationsTab = async function() {
+      const container = document.getElementById('notifications-list');
+      const badge = document.getElementById('notifications-badge');
+      try {
+        currentClientNationalId = localStorage.getItem("currentClientNationalId");
+        let messagesMap = new Map();
+
+        const snapAll = await getDocs(collection(db, "admin_client_messages"));
+        snapAll.forEach(docSnap => {
+          const data = docSnap.data();
+          const matchPhone = currentClientPhone && String(data.clientPhone || data.phone || '') === String(currentClientPhone);
+          const matchId = currentClientNationalId && String(data.nationalId || data.id_number || '') === String(currentClientNationalId);
+          const isBroadcast = !data.clientPhone && !data.nationalId && !data.id_number;
+
+          if (matchPhone || matchId || isBroadcast) {
+            messagesMap.set(docSnap.id, { id: docSnap.id, ...data });
+          }
+        });
+
+        let messagesList = Array.from(messagesMap.values());
+        messagesList.sort((a, b) => (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0));
+
+        if (messagesList.length > 0) {
+          localStorage.setItem('last_seen_messages_count', messagesList.length);
+        }
+
+        if (badge) {
+          badge.classList.add('hidden');
+          badge.innerText = '0';
+        }
+
+        if (messagesList.length === 0) {
+          container.innerHTML = `<p class="text-center py-6 text-gray-400 text-xs">لا توجد إشعارات حالياً.</p>`;
+          return;
+        }
+
+        let html = '';
+        messagesList.forEach(msg => {
+          html += `
+            <div class="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm space-y-2">
+              <div class="flex justify-between items-start">
+                <h4 class="font-bold text-gray-900 text-xs sm:text-sm">${msg.subject || 'بدون عنوان'}</h4>
+                <span class="bg-indigo-50 text-indigo-600 text-[10px] font-extrabold px-2.5 py-1 rounded-lg">${msg.sender || 'الإدارة'}</span>
+              </div>
+              <p class="text-xs text-gray-600 leading-relaxed">${msg.body || ''}</p>
+              ${msg.date ? `<div class="text-[10px] text-gray-400 text-left">${msg.date}</div>` : ''}
+            </div>
+          `;
+        });
+        container.innerHTML = html;
+      } catch (err) {
+        container.innerHTML = `<p class="text-center py-6 text-rose-500 text-xs">تعذر جلب الإشعارات.</p>`;
+      }
+    };
+
+    window.loadMerchantsCards = async function() {
+      const pinnedContainer = document.getElementById('pinned-merchant-container');
+      const cardsContainer = document.getElementById('merchants-cards-container');
+      const favs = window.getFavorites();
+
+      try {
+        const querySnapshot = await getDocs(collection(db, "merchants"));
+        
+        if (querySnapshot.empty) {
+          pinnedContainer.innerHTML = "";
+          cardsContainer.innerHTML = `<div class="bg-white p-6 rounded-2xl border text-center text-gray-400 text-xs">لا توجد مكاتب مسجلة حالياً.</div>`;
+          return;
+        }
+
+        let merchantsList = [];
+        querySnapshot.forEach((docSnap) => {
+          merchantsList.push({ id: docSnap.id, ...docSnap.data() });
+        });
+
+        let pinnedMerchants = merchantsList.filter(data => data.pinned === true || data.isPinned === true);
+        let normalMerchants = merchantsList.filter(data => !(data.pinned === true || data.isPinned === true));
+
+        let pinnedHTML = '';
+        pinnedMerchants.forEach((data) => {
+          const officeName = data.officeName || data.name || 'مكتب معتمد';
+          const city = data.city || 'غير محدد';
+          const phone = data.phone || 'غير متوفر';
+          const isFav = favs.some(item => item.name === officeName);
+          const heartIconClass = isFav ? "fa-solid fa-heart text-rose-500 text-base" : "fa-regular fa-heart text-base";
+
+          pinnedHTML += `
+            <div class="bg-amber-50 border border-amber-400 rounded-2xl p-4 shadow-sm flex items-center justify-between mb-3">
+              <div class="flex items-center space-x-3 space-x-reverse">
+                <div class="w-10 h-10 bg-amber-100 text-amber-600 rounded-xl flex items-center justify-center text-base">
+                  <i class="fa-solid fa-store"></i>
+                </div>
+                <div>
+                  <h4 class="font-bold text-gray-900 text-xs sm:text-sm flex items-center gap-1.5">
+                    ${officeName}
+                    <span class="bg-amber-200 text-amber-900 text-[10px] px-1.5 py-0.5 rounded-md font-bold">مميز</span>
+                  </h4>
+                  <p class="text-[11px] text-gray-400">${city}</p>
+                </div>
+              </div>
+              <div class="flex items-center space-x-2 space-x-reverse">
+                <button onclick="toggleFavorite('${officeName}', '${city}', '${phone}')" class="text-gray-400 hover:text-rose-500 p-2">
+                  <i class="${heartIconClass}"></i>
+                </button>
+                <button onclick="showMerchantDetails('${officeName}', '${phone}')" class="bg-rose-50 hover:bg-rose-100 text-rose-600 px-3.5 py-1.5 rounded-xl text-xs font-bold transition">
+                  عرض
+                </button>
+              </div>
+            </div>
+          `;
+        });
+        pinnedContainer.innerHTML = pinnedHTML;
+
+        let cardsHTML = '';
+        normalMerchants.forEach((data) => {
+          const officeName = data.officeName || data.name || 'مكتب معتمد';
+          const city = data.city || 'غير محدد';
+          const phone = data.phone || 'غير متوفر';
+          const isFav = favs.some(item => item.name === officeName);
+          const heartIconClass = isFav ? "fa-solid fa-heart text-rose-500 text-base" : "fa-regular fa-heart text-base";
+
+          cardsHTML += `
+            <div class="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm flex items-center justify-between">
+              <div class="flex items-center space-x-3 space-x-reverse">
+                <div class="w-10 h-10 bg-rose-50 text-rose-600 rounded-xl flex items-center justify-center text-base">
+                  <i class="fa-solid fa-store"></i>
+                </div>
+                <div>
+                  <h4 class="font-bold text-gray-900 text-xs sm:text-sm">${officeName}</h4>
+                  <p class="text-[11px] text-gray-400">${city}</p>
+                </div>
+              </div>
+              <div class="flex items-center space-x-2 space-x-reverse">
+                <button onclick="toggleFavorite('${officeName}', '${city}', '${phone}')" class="text-gray-400 hover:text-rose-500 p-2">
+                  <i class="${heartIconClass}"></i>
+                </button>
+                <button onclick="showMerchantDetails('${officeName}', '${phone}')" class="bg-rose-50 hover:bg-rose-100 text-rose-600 px-3.5 py-1.5 rounded-xl text-xs font-bold transition">
+                  عرض
+                </button>
+              </div>
+            </div>
+          `;
+        });
+        cardsContainer.innerHTML = cardsHTML;
+      } catch (err) {
+        cardsContainer.innerHTML = `<div class="bg-white p-6 rounded-2xl border text-center text-gray-400 text-xs">تعذر تحميل المكاتب.</div>`;
+      }
+    };
+
+    window.loadClientData = async function() {
+      try {
+        currentClientNationalId = localStorage.getItem("currentClientNationalId");
+        if (!currentClientNationalId) return;
+
+        const q = query(collection(db, "clients"), where("nationalId", "==", currentClientNationalId));
+        const snap = await getDocs(q);
+
+        if (!snap.empty) {
+          const docSnap = snap.docs[0];
+          currentClientDocId = docSnap.id;
+          const data = docSnap.data();
+          currentClientPhone = data.phone || "";
+          currentClientName = data.name || "المستفيد";
+
+          document.getElementById('header-client-name').innerText = currentClientName;
+          document.getElementById('set-client-name').value = currentClientName;
+          document.getElementById('set-id').value = data.nationalId || '';
+          document.getElementById('set-phone').value = data.phone || '';
+          document.getElementById('set-email').value = data.email || '';
+          document.getElementById('set-city').value = data.city || '';
+        }
+      } catch (err) {
+        console.error("Error loading client data:", err);
+      }
+    };
+
+    window.handleSendMessage = async function(e) {
+      e.preventDefault();
+      const subject = document.getElementById('msg-subject').value.trim();
+      const body = document.getElementById('msg-body').value.trim();
+      const clientName = document.getElementById('header-client-name').innerText || "المستفيد";
+
+      try {
+        await addDoc(collection(db, "client_messages"), {
+          nationalId: currentClientNationalId,
+          clientName: clientName,
+          clientPhone: currentClientPhone,
+          subject: subject,
+          body: body,
+          sender: clientName,
+          status: "قيد المراجعة",
+          date: new Date().toLocaleDateString('ar-SA'),
+          createdAt: serverTimestamp()
+        });
+
+        document.getElementById('msg-subject').value = '';
+        document.getElementById('msg-body').value = '';
+        showToast("تم إرسال الملاحظة بنجاح", "success");
+      } catch (err) {
+        showToast("حدث خطأ أثناء إرسال الملاحظة", "error");
+      }
+    };
+
+    window.showTab = function(tabId) {
+      ['dashboard', 'reports', 'notifications', 'messages', 'favorites'].forEach(id => {
+        const el = document.getElementById(`tab-${id}`);
+        if (el) el.classList.add('hidden');
+      });
+      document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+
+      if (tabId === 'favorites') {
+        window.loadFavoritesTab();
+      } else if (tabId === 'notifications') {
+        window.loadNotificationsTab();
+      } else if (tabId === 'reports') {
+        window.loadReportsTab();
+      }
+    };
+
+    window.openSettingsModal = function() {
+      document.getElementById('modal-account-settings').classList.remove('hidden');
+      document.getElementById('modal-account-settings').classList.add('flex');
+    };
+
+    window.handleSaveSettings = async function(e) {
+      e.preventDefault();
+      const phone = document.getElementById('set-phone').value.trim();
+      const email = document.getElementById('set-email').value.trim();
+      const city = document.getElementById('set-city').value.trim();
+
+      try {
+        if (currentClientDocId) {
+          await updateDoc(doc(db, "clients", currentClientDocId), { phone, email, city });
+          currentClientPhone = phone;
+        }
+        closeModal('modal-account-settings');
+        showToast("تم حفظ التعديلات بنجاح", "success");
+      } catch (err) {
+        showToast("حدث خطأ أثناء حفظ الإعدادات", "error");
+      }
+    };
+
+    window.closeModal = function(id) {
+      document.getElementById(id).classList.add('hidden');
+      document.getElementById(id).classList.remove('flex');
+    };
+
+    async function initPage() {
+      await window.loadClientData();
+      window.loadSliderImages();
+      window.loadDynamicTicker();
+      window.loadMerchantsCards();
+      window.initRealtimeNotificationsListener();
+    }
+
+    initPage();
+  </script>
+</body>
+</html>

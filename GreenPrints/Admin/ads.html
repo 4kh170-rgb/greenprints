@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <title>إدارة الإعلانات - لوحة الإدارة</title>
+  
+  <!-- إعدادات PWA وتجربة الجوال -->
+  <link rel="manifest" href="../manifest.json">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="../icon-512.png">
+  <link rel="icon" type="image/png" href="../icon-512.png">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { 
+      font-family: 'Cairo', sans-serif; 
+    }
+    .custom-scroll::-webkit-scrollbar { 
+      height: 4px;
+      width: 4px; 
+    }
+    .custom-scroll::-webkit-scrollbar-track { 
+      background: transparent; 
+    }
+    .custom-scroll::-webkit-scrollbar-thumb { 
+      background: rgba(255, 255, 255, 0.2); 
+      border-radius: 4px; 
+    }
+  </style>
+</head>
+<body class="bg-slate-950 min-h-screen flex flex-col text-gray-100 relative selection:bg-amber-500 selection:text-white">
+
+  <!-- إشعار عائم -->
+  <div id="toast-notification" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 hidden bg-gray-900 text-white text-xs font-bold px-5 py-2.5 rounded-xl shadow-2xl flex items-center space-x-2 space-x-reverse transition-all duration-300">
+    <i id="toast-icon" class="fa-solid fa-circle-check text-emerald-400"></i>
+    <span id="toast-message">تمت العملية بنجاح</span>
+  </div>
+
+  <!-- الشريط العلوي للإدارة -->
+  <header class="w-full bg-slate-900 border-b border-slate-800 py-4 px-6 sm:px-10 flex flex-col md:flex-row justify-between items-center gap-4 z-40 shrink-0 shadow-lg">
+    <div class="flex items-center space-x-3 space-x-reverse w-full md:w-auto justify-between md:justify-start">
+      <div class="text-white font-black text-sm sm:text-base flex items-center space-x-2 space-x-reverse">
+        <i class="fa-solid fa-rectangle-ad text-amber-400 text-lg"></i>
+        <span>إدارة الإعلانات والشريط - منصة البصمات الخضراء</span>
+      </div>
+      <button onclick="adminLogout()" class="md:hidden text-red-400 hover:text-red-300 text-xs font-bold flex items-center space-x-1 space-x-reverse bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-700">
+        <i class="fa-solid fa-right-from-bracket"></i>
+        <span>خروج</span>
+      </button>
+    </div>
+
+    <!-- شريط التنقل العلوي الأفقي الواسع -->
+    <nav class="flex overflow-x-auto space-x-2 space-x-reverse pb-1 custom-scroll font-semibold text-xs whitespace-nowrap w-full md:w-auto max-w-full">
+      <a href="admin-dashboard.html" class="px-3.5 py-2 rounded-xl hover:bg-slate-800 text-slate-300 flex items-center space-x-2 space-x-reverse shrink-0 transition">
+        <i class="fa-solid fa-house text-slate-400"></i>
+        <span>الرئيسية</span>
+      </a>
+      <a href="offices.html" class="px-3.5 py-2 rounded-xl hover:bg-slate-800 text-slate-300 flex items-center space-x-2 space-x-reverse shrink-0 transition">
+        <i class="fa-solid fa-store text-slate-400"></i>
+        <span>المكاتب والتجار</span>
+      </a>
+      <a href="users.html" class="px-3.5 py-2 rounded-xl hover:bg-slate-800 text-slate-300 flex items-center space-x-2 space-x-reverse shrink-0 transition">
+        <i class="fa-solid fa-users text-slate-400"></i>
+        <span>الأفراد</span>
+      </a>
+      <a href="ads.html" class="px-3.5 py-2 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center space-x-2 space-x-reverse shrink-0">
+        <i class="fa-solid fa-rectangle-ad"></i>
+        <span>الإعلانات</span>
+      </a>
+      <a href="reports.html" class="px-3.5 py-2 rounded-xl hover:bg-slate-800 text-slate-300 flex items-center space-x-2 space-x-reverse shrink-0 transition">
+        <i class="fa-solid fa-chart-line text-slate-400"></i>
+        <span>التقارير</span>
+      </a>
+      <a href="messages.html" class="px-3.5 py-2 rounded-xl hover:bg-slate-800 text-slate-300 flex items-center space-x-2 space-x-reverse shrink-0 transition">
+        <i class="fa-solid fa-envelope text-slate-400"></i>
+        <span>الرسائل</span>
+      </a>
+      <a href="settings.html" class="px-3.5 py-2 rounded-xl hover:bg-slate-800 text-slate-300 flex items-center space-x-2 space-x-reverse shrink-0 transition">
+        <i class="fa-solid fa-gear text-slate-400"></i>
+        <span>الإعدادات</span>
+      </a>
+    </nav>
+
+    <div class="hidden md:flex items-center">
+      <button onclick="adminLogout()" class="text-red-400 hover:text-red-300 text-xs font-bold flex items-center space-x-1.5 space-x-reverse bg-slate-800 px-4 py-2 rounded-xl border border-slate-700 transition">
+        <i class="fa-solid fa-right-from-bracket"></i>
+        <span>تسجيل الخروج</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- المحتوى الرئيسي بملء الشاشة وبمرونة تامة -->
+  <main class="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-8 py-8 flex flex-col space-y-6">
+
+    <!-- ترويسة الصفحة -->
+    <div class="bg-slate-900 border border-slate-800 p-6 rounded-3xl shadow-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div class="space-y-1">
+        <h1 class="text-lg sm:text-xl font-black text-white">إدارة الإعلانات والشريط المتحرك</h1>
+        <p class="text-xs text-slate-400 font-medium">التحكم في الشريط المتحرك، الحسابات المثبتة، وصور السلايدر العلوي بكل احترافية.</p>
+      </div>
+      <span class="bg-amber-500/10 text-amber-400 border border-amber-500/20 text-xs font-bold px-3.5 py-1.5 rounded-xl">قسم الإعلانات</span>
+    </div>
+
+    <!-- شبكة الإدارة الاحترافية واسعة النطاق -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      
+      <!-- 1. الشريط المتحرك -->
+      <div class="bg-slate-900 border border-slate-800 p-6 rounded-3xl shadow-xl flex flex-col justify-between space-y-4">
+        <div class="space-y-4">
+          <div class="flex items-center space-x-2.5 space-x-reverse">
+            <div class="w-10 h-10 bg-amber-500/10 text-amber-400 rounded-xl flex items-center justify-center text-sm">
+              <i class="fa-solid fa-bullhorn"></i>
+            </div>
+            <h3 class="font-bold text-white text-sm">1. الشريط المتحرك</h3>
+          </div>
+          <div class="flex gap-2">
+            <input type="text" id="marqueeInput" placeholder="اكتب اسم المكتب هنا..." class="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-xs text-white outline-none focus:border-amber-400">
+            <button onclick="addMarquee()" class="bg-amber-500 hover:bg-amber-600 text-gray-950 font-bold px-4 py-2.5 rounded-xl transition shadow-md text-xs shrink-0">إضافة</button>
+          </div>
+          <div class="text-xs text-slate-400 font-bold">الأسماء الحالية في الشريط:</div>
+          <div id="marqueeList" class="space-y-2 max-h-60 overflow-y-auto custom-scroll pr-1">جاري التحميل...</div>
+        </div>
+      </div>
+
+      <!-- 2. تثبيت المكاتب -->
+      <div class="bg-slate-900 border border-slate-800 p-6 rounded-3xl shadow-xl flex flex-col justify-between space-y-4">
+        <div class="space-y-4">
+          <div class="flex items-center space-x-2.5 space-x-reverse">
+            <div class="w-10 h-10 bg-amber-500/10 text-amber-400 rounded-xl flex items-center justify-center text-sm">
+              <i class="fa-solid fa-thumbtack"></i>
+            </div>
+            <h3 class="font-bold text-white text-sm">2. تثبيت المكاتب والمستثمرين</h3>
+          </div>
+          <div class="flex gap-2">
+            <select id="officeSelect" class="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-xs text-white outline-none focus:border-amber-400">
+              <option value="">اختر المكتب أو المستثمر...</option>
+              <option value="office1">مكتب الوعد العربي</option>
+              <option value="office2">مكتب مهلة التساهيل</option>
+            </select>
+            <button onclick="pinProfile()" class="bg-amber-500 hover:bg-amber-600 text-gray-950 font-bold px-4 py-2.5 rounded-xl transition shadow-md text-xs shrink-0">تثبيت</button>
+          </div>
+          <div class="text-xs text-slate-400 font-bold">الحسابات المثبتة حالياً:</div>
+          <div id="pinnedList" class="space-y-2 max-h-60 overflow-y-auto custom-scroll pr-1"></div>
+        </div>
+      </div>
+
+      <!-- 3. السلايدر العلوي -->
+      <div class="bg-slate-900 border border-slate-800 p-6 rounded-3xl shadow-xl flex flex-col justify-between space-y-4">
+        <div class="space-y-4">
+          <div class="flex items-center space-x-2.5 space-x-reverse">
+            <div class="w-10 h-10 bg-amber-500/10 text-amber-400 rounded-xl flex items-center justify-center text-sm">
+              <i class="fa-solid fa-images"></i>
+            </div>
+            <h3 class="font-bold text-white text-sm">3. السلايدر العلوي</h3>
+          </div>
+          <div class="flex gap-2">
+            <input type="text" id="imageUrlInput" placeholder="رابط الصورة (https://...)" class="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-xs text-white outline-none focus:border-amber-400">
+            <button onclick="addImage()" class="bg-amber-500 hover:bg-amber-600 text-gray-950 font-bold px-4 py-2.5 rounded-xl transition shadow-md text-xs shrink-0">إضافة</button>
+          </div>
+          <div class="text-xs text-slate-400 font-bold">الصور الحالية في السلايدر:</div>
+          <div id="imageList" class="space-y-2 max-h-60 overflow-y-auto custom-scroll pr-1">جاري تحميل الصور...</div>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- تذييل الصفحة -->
+  <footer class="w-full py-4 text-center text-slate-500 text-xs border-t border-slate-900 bg-slate-950 shrink-0">
+    منصة البصمات الخضراء &copy; 2026 - جميع الحقوق محفوظة
+  </footer>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { 
+      getFirestore, collection, getDocs, addDoc, deleteDoc, doc, serverTimestamp 
+    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBE-mGCcnUCgscoECF-4ncW0ZuB57Uo6CM",
+      authDomain: "green-prints-c6f65.firebaseapp.com",
+      projectId: "green-prints-c6f65",
+      storageBucket: "green-prints-c6f65.firebasestorage.app",
+      messagingSenderId: "726286369175",
+      appId: "1:726286369175:web:3137f5597c177aeb8c84d2",
+      measurementId: "G-7XLHB3RSZR"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    let pinnedItems = [];
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast-notification');
+      document.getElementById('toast-message').innerText = msg;
+      toast.classList.remove('hidden');
+      setTimeout(() => toast.classList.add('hidden'), 3000);
+    }
+
+    window.adminLogout = function() {
+      localStorage.removeItem("isAdminLoggedIn");
+      window.location.href = "admin-login.html";
+    }
+
+    async function loadMarqueeAds() {
+      const listContainer = document.getElementById('marqueeList');
+      try {
+        const querySnapshot = await getDocs(collection(db, "ads"));
+        let html = '';
+
+        if (querySnapshot.empty) {
+          listContainer.innerHTML = `<div class="text-xs text-slate-500 p-3 text-center bg-slate-800/40 rounded-xl">لا توجد أسماء مضافة حالياً.</div>`;
+          return;
+        }
+
+        querySnapshot.forEach((docSnap) => {
+          const data = docSnap.data();
+          const officeName = data.officeName || data.name || data.text || 'مكتب معتمد';
+          
+          html += `
+            <div class="flex items-center justify-between p-3 bg-slate-800 rounded-xl border border-slate-700 text-xs">
+              <span class="truncate text-slate-200"><i class="fa-solid fa-bullhorn text-amber-400 ml-2"></i>${officeName}</span>
+              <button onclick="removeMarquee('${docSnap.id}')" class="text-rose-400 hover:text-rose-300 p-1"><i class="fa-solid fa-trash-can text-xs"></i></button>
+            </div>
+          `;
+        });
+
+        listContainer.innerHTML = html;
+      } catch (err) {
+        console.error("خطأ في جلب الإعلانات:", err);
+        listContainer.innerHTML = `<div class="text-xs text-rose-400 p-3 text-center">تعذر جلب البيانات.</div>`;
+      }
+    }
+
+    window.addMarquee = async function() {
+      const input = document.getElementById('marqueeInput');
+      const val = input.value.trim();
+      if (!val) return;
+
+      try {
+        await addDoc(collection(db, "ads"), {
+          officeName: val,
+          createdAt: serverTimestamp()
+        });
+        input.value = '';
+        showToast("تمت الإضافة بنجاح");
+        loadMarqueeAds();
+      } catch (err) {
+        alert("حدث خطأ أثناء الحفظ في قاعدة البيانات");
+      }
+    };
+
+    window.removeMarquee = async function(docId) {
+      if (confirm("هل أنت متأكد من حذف هذا العنصر؟")) {
+        try {
+          await deleteDoc(doc(db, "ads", docId));
+          showToast("تم الحذف بنجاح");
+          loadMarqueeAds();
+        } catch (err) {
+          alert("حدث خطأ أثناء الحذف");
+        }
+      }
+    };
+
+    async function loadSliderImages() {
+      const listContainer = document.getElementById('imageList');
+      try {
+        const querySnapshot = await getDocs(collection(db, "slider_images"));
+        let html = '';
+
+        if (querySnapshot.empty) {
+          listContainer.innerHTML = `<div class="text-xs text-slate-500 p-3 text-center bg-slate-800/40 rounded-xl">لا توجد صور مضافة للسلايدر حالياً.</div>`;
+          return;
+        }
+
+        querySnapshot.forEach((docSnap) => {
+          const data = docSnap.data();
+          const url = data.url;
+          
+          html += `
+            <div class="flex items-center justify-between p-2.5 bg-slate-800 rounded-xl border border-slate-700 text-xs">
+              <div class="flex items-center gap-2.5 truncate">
+                <img src="${url}" class="w-9 h-9 object-cover rounded-lg border border-slate-600 flex-shrink-0">
+                <span class="text-xs text-slate-300 truncate">${url}</span>
+              </div>
+              <button onclick="removeImage('${docSnap.id}')" class="text-rose-400 hover:text-rose-300 p-1 flex-shrink-0"><i class="fa-solid fa-trash-can text-xs"></i></button>
+            </div>
+          `;
+        });
+
+        listContainer.innerHTML = html;
+      } catch (err) {
+        console.error("خطأ في جلب صور السلايدر:", err);
+        listContainer.innerHTML = `<div class="text-xs text-rose-400 p-3 text-center">تعذر جلب صور السلايدر.</div>`;
+      }
+    }
+
+    window.addImage = async function() {
+      const input = document.getElementById('imageUrlInput');
+      const urlVal = input.value.trim();
+      if (!urlVal) return;
+
+      try {
+        await addDoc(collection(db, "slider_images"), {
+          url: urlVal,
+          createdAt: serverTimestamp()
+        });
+        input.value = '';
+        showToast("تمت إضافة رابط الصورة");
+        loadSliderImages();
+      } catch (err) {
+        alert("حدث خطأ أثناء حفظ رابط الصورة في قاعدة البيانات");
+      }
+    };
+
+    window.removeImage = async function(docId) {
+      if (confirm("هل أنت متأكد من حذف هذه الصورة من السلايدر؟")) {
+        try {
+          await deleteDoc(doc(db, "slider_images", docId));
+          showToast("تم الحذف بنجاح");
+          loadSliderImages();
+        } catch (err) {
+          alert("حدث خطأ أثناء حذف الصورة");
+        }
+      }
+    };
+
+    function renderPinnedItems() {
+      const container = document.getElementById('pinnedList');
+      if (pinnedItems.length === 0) {
+        container.innerHTML = `<div class="text-xs text-slate-500 p-3 text-center bg-slate-800/40 rounded-xl">لا توجد حسابات مثبتة حالياً.</div>`;
+        return;
+      }
+      container.innerHTML = pinnedItems.map((item, idx) => `
+        <div class="flex items-center justify-between p-3 bg-slate-800 rounded-xl border border-slate-700 text-xs">
+          <span class="font-bold text-slate-200 truncate"><i class="fa-solid fa-thumbtack text-amber-400 ml-2"></i>${item}</span>
+          <button onclick="removePinned(${idx})" class="text-rose-400 hover:text-rose-300 p-1"><i class="fa-solid fa-trash-can text-xs"></i></button>
+        </div>
+      `).join('');
+    }
+
+    window.pinProfile = function() { 
+      const s = document.getElementById('officeSelect'); 
+      if(s.value){ 
+        const t = s.options[s.selectedIndex].text; 
+        if(!pinnedItems.includes(t)) {
+          pinnedItems.push(t); 
+          showToast("تم تثبيت الحساب بنجاح");
+          renderPinnedItems(); 
+        }
+      } 
+    }
+    
+    window.removePinned = function(idx) { 
+      pinnedItems.splice(idx, 1); 
+      renderPinnedItems(); 
+    }
+
+    loadMarqueeAds();
+    loadSliderImages();
+    renderPinnedItems();
+  </script>
+</body>
+</html>
